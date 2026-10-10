@@ -105,6 +105,7 @@ class SettingsReloader:
         if ConfigKeys.SYSTEM_DUMP_EVENTS in changed:
             bot.streaming.log_dump_events = bool(get(ConfigKeys.SYSTEM_DUMP_EVENTS))
         if ConfigKeys.SYSTEM_ALLOW_NETS in changed:
-            bot.fetcher.set_nets(get(ConfigKeys.SYSTEM_ALLOW_NETS))
+            for fetcher in (bot.fetcher, bot.misskey.fetcher):
+                fetcher.set_nets(get(ConfigKeys.SYSTEM_ALLOW_NETS))
         if changed & _POST_SCHEDULE_KEYS:
             bot.auto_post.apply_schedule()

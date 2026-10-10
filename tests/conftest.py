@@ -297,6 +297,7 @@ async def make_bot(tmp_path: Path) -> AsyncIterator[MakeBot]:
         await bot.plugin_manager.cleanup_plugins()
         await bot.streaming.close()
         await bot.misskey.close()
+        await bot.fetcher.close()
         await bot.openai.close()
         await bot.db.close()
 

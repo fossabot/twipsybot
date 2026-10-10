@@ -41,14 +41,13 @@ class Neuro:
             instance_url = config.get_required(ConfigKeys.MISSKEY_URL)
             access_token = config.get_required(ConfigKeys.MISSKEY_TOKEN)
             self._misskey_transport = TCPClient()
-            self.fetcher = PublicFetcher(
-                config.get(ConfigKeys.SYSTEM_ALLOW_NETS, []), origin=instance_url
-            )
+            nets = config.get(ConfigKeys.SYSTEM_ALLOW_NETS, [])
+            self.fetcher = PublicFetcher(nets)
             self.misskey = MisskeyAPI(
                 instance_url,
                 access_token,
                 transport=self._misskey_transport,
-                fetcher=self.fetcher,
+                fetcher=PublicFetcher(nets, origin=instance_url),
             )
             self.streaming = StreamingClient(
                 instance_url,
@@ -175,6 +174,7 @@ class Neuro:
             ("cleaning up tasks", self.runtime.cleanup_tasks),
             ("closing streaming client", self.streaming.close),
             ("closing Misskey client", self.misskey.close),
+            ("closing web fetcher", self.fetcher.close),
             ("closing OpenAI client", self.openai.close),
             ("closing database", self.db.close),
         ):

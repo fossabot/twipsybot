@@ -61,7 +61,9 @@ class PublicFetcher:
     def is_public(self, ip: _IPAddress) -> bool:
         if ip.version == 6 and ip in _NAT64:
             ip = ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
-        return ip.is_global or any(ip in network for network in self._nets)
+        return not ip.is_multicast and (
+            ip.is_global or any(ip in network for network in self._nets)
+        )
 
     def _check(self, url: URL) -> None:
         if url.scheme not in {"http", "https"} or not url.host:

@@ -14,6 +14,7 @@ from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPP
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from conftest import MakeBot, MakePluginDir, WriteConfig, set_plugin_config
+from yarl import URL
 
 from twipsybot import Neuro
 from twipsybot.admin import handlers
@@ -550,8 +551,19 @@ async def test_settings_reload_applies_live_and_flags_restart(
     assert handlers.admins(bot) == ["user-9"]
     assert bot.streaming.log_dump_events is True
     assert bot.config.get(ConfigKeys.SYSTEM_ALLOW_NETS) == ["198.18.0.0/15"]
-    assert bot.fetcher.is_public(ipaddress.ip_address("198.19.1.1"))
+    for fetcher in (bot.fetcher, bot.misskey.fetcher):
+        assert fetcher.is_public(ipaddress.ip_address("198.19.1.1"))
     warning.assert_called_once_with("Restart required for: timeline.home")
+
+
+async def test_web_fetcher_has_no_misskey_origin_exemption(
+    make_bot: MakeBot, write_config: WriteConfig
+) -> None:
+    bot = await make_bot(write_config())
+    origin = URL(bot.misskey.instance_url)
+
+    assert bot.misskey.fetcher.is_origin(origin.host or "", origin.port)
+    assert not bot.fetcher.is_origin(origin.host or "", origin.port)
 
 
 async def test_settings_reload_keeps_current_on_invalid_file(
@@ -933,6 +945,7 @@ async def test_stop_continues_after_cleanup_failure() -> None:
     bot.scheduler = SimpleNamespace(running=False)
     bot.streaming = SimpleNamespace(close=AsyncMock())
     bot.misskey = SimpleNamespace(close=AsyncMock())
+    bot.fetcher = SimpleNamespace(close=AsyncMock())
     bot.openai = SimpleNamespace(close=AsyncMock())
     bot.db = SimpleNamespace(close=AsyncMock())
 
@@ -942,6 +955,7 @@ async def test_stop_continues_after_cleanup_failure() -> None:
     bot.runtime.cleanup_tasks.assert_awaited_once()
     bot.streaming.close.assert_awaited_once()
     bot.misskey.close.assert_awaited_once()
+    bot.fetcher.close.assert_awaited_once()
     bot.openai.close.assert_awaited_once()
     bot.db.close.assert_awaited_once()
 
@@ -969,6 +983,7 @@ async def test_stop_cancels_remaining_cleanup_after_timeout(
     bot.scheduler = SimpleNamespace(running=False)
     bot.streaming = SimpleNamespace(close=AsyncMock())
     bot.misskey = SimpleNamespace(close=AsyncMock())
+    bot.fetcher = SimpleNamespace(close=AsyncMock())
     bot.openai = SimpleNamespace(close=AsyncMock())
     bot.db = SimpleNamespace(close=blocking_close)
 
