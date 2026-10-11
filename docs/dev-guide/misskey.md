@@ -5,7 +5,7 @@ description: TwipsyBot 使用的 Misskey REST API、Streaming Channel、权限�
 
 # Misskey
 
-REST 负责查询与写入，Streaming 接收实时事件，协议适配集中在 `twipsybot/clients/misskey`。业务代码调用客户端方法，不自行拼接 endpoint、认证参数或 WebSocket 消息；插件使用 [`PluginContext.misskey`](plugins.md#misskey-与-drive)。
+REST 负责查询与写入，Streaming 接收实时事件，协议适配集中在 `twipsybot/clients/misskey`。业务代码调用客户端方法，不自行拼接 endpoint、认证参数或 WebSocket 消息；插件使用 [`PluginContext.misskey`](plugins.md#misskey-与-drive)，未封装的端点经其 `call_api()` 复用同一请求通道。
 
 基于 Misskey API `2026.9.0`，随官方更新同步维护。
 
@@ -13,7 +13,7 @@ REST 负责查询与写入，Streaming 接收实时事件，协议适配集中�
 
 | Endpoint | 用途 | 客户端方法 |
 | --- | --- | --- |
-| `i` | 机器人账号信息 | `get_current_user()` |
+| `i` | 机器人账号 | `get_current_user()` |
 | `notes/show` | 获取帖子 | `get_note()` |
 | `notes/create` | 发帖、回复、引用、转帖 | `create_note()`、`create_renote()` |
 | `notes/delete` | 删除帖子 | `delete_note()` |

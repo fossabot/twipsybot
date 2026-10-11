@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.21.0 - 2026-10-11
+
+插件调用任意 Misskey API
+
+### Added
+
+- `PluginContext.misskey.call_api()`：调用尚未封装的 Misskey 端点，复用实例地址、令牌、并发限制、超时与错误处理
+- `twipsybot.plugin.APIResponseError`：插件可捕获的 API 错误，含 `status`、`code`、`retry_after`
+
+<br>
+
 ## 0.20.0 - 2026-10-10
 
 多模块插件

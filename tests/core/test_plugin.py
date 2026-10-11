@@ -85,6 +85,19 @@ async def test_misskey_service_adapter_user_endpoints() -> None:
     update_user_memo.assert_awaited_once_with("u1", "memo")
 
 
+async def test_misskey_service_adapter_call_api() -> None:
+    call_api = AsyncMock(return_value={"ok": True})
+    service = MisskeyServiceAdapter(
+        SimpleNamespace(drive=SimpleNamespace(), call_api=call_api)
+    )
+
+    assert await service.call_api("notes/show", {"noteId": "n1"}, retry=True) == {
+        "ok": True
+    }
+
+    call_api.assert_awaited_once_with("notes/show", {"noteId": "n1"}, retry=True)
+
+
 @pytest.mark.parametrize(
     ("value", "expected"),
     [

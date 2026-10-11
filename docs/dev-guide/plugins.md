@@ -185,6 +185,7 @@ async with self.context.bot.actor_lock(event.user.id, event.user.handle):
 | `misskey.update_user_memo(user_id, memo)` | 写入个人备注，`None` 或空字符串删除；需 `write:account` 权限 |
 | `misskey.list_antennas()` | 获取天线 |
 | `misskey.get_note(note_id)` | 获取帖子最新数据 |
+| `misskey.call_api(endpoint, params, retry=False)` | 调用尚未封装的 REST 端点 |
 | `misskey.instance_url` | 实例地址 |
 | `misskey.drive.show_file(file_id)` | 文件信息 |
 | `misskey.drive.fetch_bytes(url, max_bytes=...)` | 从 URL 下载，上限默认 32 MiB |
@@ -192,6 +193,17 @@ async with self.context.bot.actor_lock(event.user.id, event.user.handle):
 | `misskey.drive.upload_bytes(data, name=..., content_type=...)` | 上传文件，结果 `id` 为文件 ID |
 
 `visibility`：`public`、`home`、`followers`。`create_note` 与 `HandledResult` 暂不支持附件。
+
+`call_api` 用于调用上表未封装的 Misskey 端点，自动使用实例地址与机器人令牌，复用并发限制、超时与错误处理：
+
+```python
+notes = await self.context.misskey.call_api("notes/search", {"query": "misskey", "limit": 10})
+```
+
+- `endpoint` 为 `notes/search` 这类相对路径，仅允许字母、数字、`_`、`-` 与 `/` 分隔；`params` 为 JSON 请求体，不得含 `i`，否则抛出 `ValueError`。
+- 默认不重试，避免重复提交写操作；仅幂等读取端点才传 `retry=True`，此时连接错误与限流最多重试 2 次。
+- 返回解析后的 JSON，无响应体时返回 `{}`。失败抛出 `APIResponseError`（`twipsybot.plugin` 导出），可读取 `status`、`code`、`retry_after`。
+- 仅支持 JSON 请求，文件上传请用 `drive.upload_bytes`。可调用的端点由机器人令牌权限决定，新增权限须同步更新[快速开始](../user-guide/getting-started.md)。
 
 ### HTTP
 

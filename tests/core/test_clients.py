@@ -323,6 +323,61 @@ async def test_user_endpoints_use_misskey_api() -> None:
     )
 
 
+@pytest.mark.parametrize("retry", [False, True])
+async def test_call_api_normalizes_endpoint_and_selects_request(retry: bool) -> None:
+    read = AsyncMock(return_value={"via": "read"})
+    write = AsyncMock(return_value={"via": "write"})
+    api = object.__new__(MisskeyAPI)
+    api.make_read_request = read
+    api.make_request = write
+    params = {"query": "misskey"}
+
+    result = await api.call_api("/notes/search", params, retry=retry)
+
+    chosen, other = (read, write) if retry else (write, read)
+    assert result == chosen.return_value
+    chosen.assert_awaited_once_with("notes/search", {"query": "misskey"})
+    other.assert_not_awaited()
+    assert params == {"query": "misskey"}
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "",
+        "/",
+        "../i",
+        "notes//show",
+        "notes/",
+        "notes?x=1",
+        "a#b",
+        "a b",
+        "a\\b",
+        "http://x/api/i",
+        "notes/%2e%2e",
+        "笔记/show",
+    ],
+)
+async def test_call_api_rejects_invalid_endpoint(endpoint: str) -> None:
+    api = object.__new__(MisskeyAPI)
+    api.make_request = AsyncMock()
+
+    with pytest.raises(ValueError, match="invalid endpoint"):
+        await api.call_api(endpoint)
+
+    api.make_request.assert_not_awaited()
+
+
+async def test_call_api_rejects_token_param() -> None:
+    api = object.__new__(MisskeyAPI)
+    api.make_request = AsyncMock()
+
+    with pytest.raises(ValueError, match="'i'"):
+        await api.call_api("notes/show", {"i": "override"})
+
+    api.make_request.assert_not_awaited()
+
+
 @pytest.mark.parametrize(
     ("method", "identifier_key"),
     [("send_message", "toUserId"), ("send_room_message", "toRoomId")],

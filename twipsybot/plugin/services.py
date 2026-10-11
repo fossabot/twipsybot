@@ -1,4 +1,4 @@
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
@@ -60,6 +60,15 @@ class MisskeyServiceAdapter:
     @property
     def drive(self) -> DriveServiceAdapter:
         return self._drive
+
+    async def call_api(
+        self,
+        endpoint: str,
+        params: Mapping[str, Any] | None = None,
+        *,
+        retry: bool = False,
+    ) -> Any:
+        return await self._misskey.call_api(endpoint, params, retry=retry)
 
     async def list_antennas(self) -> list[dict[str, Any]]:
         return deepcopy(await self._misskey.list_antennas())

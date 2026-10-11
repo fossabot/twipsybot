@@ -56,6 +56,14 @@ class MisskeyService(Protocol):
     @property
     def drive(self) -> DriveService: ...
 
+    async def call_api(
+        self,
+        endpoint: str,
+        params: Mapping[str, Any] | None = None,
+        *,
+        retry: bool = False,
+    ) -> Any: ...
+
     async def list_antennas(self) -> list[dict[str, Any]]: ...
 
     async def get_note(self, note_id: str) -> dict[str, Any]: ...

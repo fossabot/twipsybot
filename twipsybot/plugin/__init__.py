@@ -1,4 +1,4 @@
-from ..shared.exceptions import BlockedURLError
+from ..shared.exceptions import APIResponseError, BlockedURLError
 from .base import PLUGIN_API_VERSION, LineText, PluginBase, PluginConfig, When
 from .contracts import (
     BotControl,
@@ -25,6 +25,7 @@ from .events import (
 
 __all__ = (
     "PLUGIN_API_VERSION",
+    "APIResponseError",
     "AutoPostEvent",
     "AutoPostResult",
     "BlockedURLError",

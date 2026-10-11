@@ -3,8 +3,10 @@ title: TwipsyBot
 description: TwipsyBot 的部署、配置、功能、插件与开发文档。
 ---
 
-<p>
-    <img src="/twipsybot.png" alt="TwipsyBot" width="200" height="200">
+<div align="center" style="text-align: center">
+
+<p align="center">
+    <img src="/twipsybot.png" alt="TwipsyBot" width="200" height="200" style="display: block; margin: 0 auto">
 </p>
 
 <br>
@@ -12,6 +14,12 @@ description: TwipsyBot 的部署、配置、功能、插件与开发文档。
 # TwipsyBot
 
 一只轻量、可扩展的 [Misskey](https://misskey-hub.net/) AI 机器人。
+
+</div>
+
+<div class="side-by-side">
+
+<div>
 
 ## 文档
 
@@ -26,18 +34,11 @@ description: TwipsyBot 的部署、配置、功能、插件与开发文档。
 | [**配置参考**](user-guide/reference/configuration.md) | 全部字段与默认值 |
 | [**开发**](/dev-guide/) | 架构、插件 API 与测试 |
 
-## 能力
+</div>
 
-- 实时回复提及、私聊与群聊，保留有限上下文，可记录用户资料卡与关系。
-- 轮转或定时自动发帖，管理员还可以手动指示 AI 发帖和生图。
-- 订阅时间线与天线、关键词回复、天线贴互动、自定义主题或 RSS 发帖、识图、联网检索。
-- 关注者与管理员可用的互动命令：查状态、亲密度、切模型、功能开关、清理旧帖等。
-- 白名单、黑名单、对话间隔与次数限制。
-- SQLite 保存状态，配置热更新，无需额外数据库。
+<div>
 
-## 模型
-
-理论支持所有 OpenAI 兼容端点，以下仅列出常用：
+## 模型 <Badge type="info" text="OpenAI-compatible API" />
 
 | 提供商 | 兼容性 | 多模态 |
 | --- | :---: | :---: |
@@ -48,13 +49,34 @@ description: TwipsyBot 的部署、配置、功能、插件与开发文档。
 | [Qwen](https://www.alibabacloud.com/help/zh/model-studio/compatibility-of-openai-with-dashscope) | ✅ | 💬 👁️ 🎨 |
 | [Gemini](https://ai.google.dev/gemini-api/docs/openai) | ✅ | 💬 👁️ 🎨 |
 | [Grok](https://docs.x.ai/developers/quickstart) | ✅ | 💬 👁️ 🎨 |
-| [Perplexity](https://docs.perplexity.ai/docs/agent-api/openai-compatibility) | ✅ | 💬 👁️ |
 | [Ollama](https://docs.ollama.com/api/openai-compatibility) | ✅ | 💬 👁️ 🎨 |
 
-## 须知
+</div>
 
-- 仅依赖 Misskey 访问令牌与 OpenAI 兼容 API，推荐 Docker Compose 部署。
-- 使用独立机器人账号，令牌与密钥切勿提交或公开。
-- 自动发帖、Radar、Iincho 会主动参与实例互动，先用低频、窄天线与 `local_only` 验证。
-- “OpenAI 兼容”仅指协议，图片、视觉与审核能力取决于所选模型和服务端。
-- 请遵守所在实例规则与联邦规范。
+</div>
+
+<style>
+.side-by-side {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  column-gap: 24px;
+}
+.side-by-side > div { min-width: 0; }
+</style>
+
+## 能力
+
+- 实时回复提及、私聊与群聊，记录用户资料卡与关系。
+- 定制主题、RSS 自动发帖，或手动指示 AI 发帖和生图。
+- 订阅时间线与天线、关键词回复、天线贴互动、识图、联网检索。
+- 互动命令：查状态、亲密度、切模型、功能开关、清理旧帖等。
+- 白名单、黑名单、对话间隔与次数限制。
+- SQLite 保存状态，配置热更新，无需额外数据库。
+
+::: tip 🧩 插件扩展
+可添加任何 Misskey API 支持的功能（即使本项目未封装的端点，见 [`call_api`](dev-guide/plugins.md#misskey-与-drive)）。
+:::
+
+::: warning ⚠️ 使用须知
+请遵守所在实例规则与联邦规范，注册独立机器人账号，令牌与密钥切勿提交或公开。
+:::

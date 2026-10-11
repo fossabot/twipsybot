@@ -1,7 +1,9 @@
 import asyncio
 import json
 import random
+import re
 import time
+from collections.abc import Mapping
 from typing import Any
 
 import aiohttp
@@ -30,6 +32,7 @@ __all__ = ("MisskeyAPI",)
 NOTE_TEXT_MAX_LENGTH = 3000
 CHAT_TEXT_MAX_LENGTH = 2000
 MAX_RETRY_AFTER = 60.0
+ENDPOINT_PATTERN = re.compile(r"[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*")
 
 
 class MisskeyAPI:
@@ -164,6 +167,22 @@ class MisskeyAPI:
         ) as e:
             logger.error(f"HTTP request error: {e}")
             raise APIConnectionError() from e
+
+    async def call_api(
+        self,
+        endpoint: str,
+        params: Mapping[str, Any] | None = None,
+        *,
+        retry: bool = False,
+    ) -> Any:
+        path = endpoint.removeprefix("/")
+        if not ENDPOINT_PATTERN.fullmatch(path):
+            raise ValueError(f"invalid endpoint: {endpoint!r}")
+        data = dict(params or {})
+        if "i" in data:
+            raise ValueError("params cannot contain 'i'")
+        request = self.make_read_request if retry else self.make_request
+        return await request(path, data)
 
     @staticmethod
     def _limit_text(text: str, max_length: int, target: str) -> str:
