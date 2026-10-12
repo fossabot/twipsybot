@@ -1,8 +1,6 @@
 import { defineConfig } from "vitepress"
 import { withMermaid } from "vitepress-plugin-mermaid"
 
-const currentYear = new Date().getFullYear()
-
 export default withMermaid(
   defineConfig({
     lang: "zh-CN",
@@ -122,12 +120,6 @@ export default withMermaid(
       outline: { level: [2, 3], label: "本页内容" },
       lastUpdated: { text: "最后更新" },
       docFooter: { prev: "上一页", next: "下一页" },
-      footer: {
-        message:
-          'Code: <a href="https://github.com/oreeke/twipsybot/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">AGPL-3.0-or-later</a> · Docs: <a href="https://github.com/oreeke/twipsybot/blob/main/docs/LICENSE" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>',
-        copyright:
-          `© 2025-${currentYear} <a href="https://github.com/oreeke" target="_blank" rel="noopener noreferrer">OREEkE</a> and contributors`,
-      },
     },
     mermaid: {
       theme: "neutral",
