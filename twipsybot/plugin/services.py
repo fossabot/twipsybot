@@ -85,8 +85,11 @@ class MisskeyServiceAdapter:
         visibility: str | None = None,
         reply_id: str | None = None,
         local_only: bool | None = None,
+        file_ids: Sequence[str] | None = None,
     ) -> dict[str, Any]:
-        return await self._misskey.create_note(text, visibility, reply_id, local_only)
+        return await self._misskey.create_note(
+            text, visibility, reply_id, local_only, file_ids
+        )
 
     async def create_renote(
         self,
@@ -97,8 +100,10 @@ class MisskeyServiceAdapter:
     ) -> dict[str, Any]:
         return await self._misskey.create_renote(note_id, visibility, text, local_only)
 
-    async def send_message(self, user_id: str, text: str) -> dict[str, Any]:
-        return await self._misskey.send_message(user_id, text)
+    async def send_message(
+        self, user_id: str, text: str, file_id: str | None = None
+    ) -> dict[str, Any]:
+        return await self._misskey.send_message(user_id, text, file_id)
 
     async def show_user(self, user_id: str) -> dict[str, Any]:
         return await self._misskey.show_user(user_id)

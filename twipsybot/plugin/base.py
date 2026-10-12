@@ -87,8 +87,11 @@ class PluginBase:
             f"Plugin {self.context.name} {action}{': ' + details if details else ''}"
         )
 
-    def handled(self, response: str) -> HandledResult:
-        return {"handled": True, "response": response}
+    def handled(self, response: str, file_id: str | None = None) -> HandledResult:
+        result: HandledResult = {"handled": True, "response": response}
+        if file_id:
+            result["file_id"] = file_id
+        return result
 
     def _register_resource(self, resource: Any, cleanup_method: str = "close") -> None:
         self._resources_to_cleanup.append((resource, cleanup_method))

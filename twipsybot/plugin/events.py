@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -13,6 +13,7 @@ from ..clients.misskey.payloads import (
 
 __all__ = (
     "AutoPostEvent",
+    "AutoPostItem",
     "AutoPostResult",
     "AutoPostVisibility",
     "ContextResult",
@@ -32,10 +33,16 @@ AutoPostVisibility = Literal["public", "home", "followers"]
 class HandledResult(TypedDict):
     handled: Literal[True]
     response: str
+    file_id: NotRequired[str]
+
+
+class AutoPostItem(TypedDict):
+    text: str
+    file_ids: NotRequired[list[str]]
 
 
 class AutoPostResult(TypedDict):
-    contents: list[str]
+    contents: Sequence[str | AutoPostItem]
     visibility: NotRequired[AutoPostVisibility]
 
 

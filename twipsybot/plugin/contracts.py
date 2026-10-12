@@ -76,6 +76,7 @@ class MisskeyService(Protocol):
         visibility: str | None = None,
         reply_id: str | None = None,
         local_only: bool | None = None,
+        file_ids: Sequence[str] | None = None,
     ) -> dict[str, Any]: ...
 
     async def create_renote(
@@ -86,7 +87,9 @@ class MisskeyService(Protocol):
         local_only: bool | None = None,
     ) -> dict[str, Any]: ...
 
-    async def send_message(self, user_id: str, text: str) -> dict[str, Any]: ...
+    async def send_message(
+        self, user_id: str, text: str, file_id: str | None = None
+    ) -> dict[str, Any]: ...
 
     async def show_user(self, user_id: str) -> dict[str, Any]: ...
 

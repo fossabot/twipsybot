@@ -4,7 +4,7 @@ import re
 from datetime import timedelta
 from itertools import pairwise
 from pathlib import Path
-from typing import Annotated, Any, Literal, TypeVar
+from typing import Annotated, Any, Literal
 
 import durationpy
 from pydantic import (
@@ -246,10 +246,7 @@ class SecretsFile(Secrets):
     plugins: dict[str, dict[str, Any]] = {}
 
 
-_M = TypeVar("_M", bound=BaseModel)
-
-
-def _validate(model: type[_M], raw: dict[str, Any]) -> _M:
+def _validate[M: BaseModel](model: type[M], raw: dict[str, Any]) -> M:
     try:
         return model.model_validate(raw)
     except ValidationError as e:

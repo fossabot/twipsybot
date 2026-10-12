@@ -132,14 +132,14 @@ return {"context": "<参考资料>", "text": "去掉前缀后的用户文本"}
 ### 自动发帖
 
 ```python
-return {"contents": ["第一篇", "第二篇"], "visibility": "home"}
+return {"contents": ["第一篇", {"text": "带图", "file_ids": ["<Drive 文件 ID>"]}], "visibility": "home"}
 ```
 
 ```python
 return {"prompt": "围绕开源维护写一篇短文。"}
 ```
 
-- `contents` 直接发布、不调用 AI；`prompt` 置于全局自动发帖提示词之前，由 AI 生成。两者及 `contents` 中的文本均须非空。
+- `contents` 直接发布、不调用 AI；每项为文本或 `AutoPostItem`。`prompt` 置于全局自动发帖提示词之前，一并交给 AI 生成。文本均须非空。
 - 多插件返回时 `contents` 优先于 `prompt`，同类取优先级最高者；多篇间隔 10 秒发布。
 - 轮转模式下两者都受 `autopost.daily_max` 约束，定时模式不受限。
 - `PromptModificationResult` 可附带分钟级整数 `timestamp`。
@@ -177,10 +177,10 @@ async with self.context.bot.actor_lock(event.user.id, event.user.handle):
 
 | 接口 | 用途 |
 | --- | --- |
-| `misskey.create_note(text, visibility, reply_id, local_only)` | 发帖或回复 |
+| `misskey.create_note(text, visibility, reply_id, local_only, file_ids)` | 发帖或回复，可附带 Drive 文件 |
 | `misskey.create_renote(note_id, visibility, text, local_only)` | 转帖或引用 |
 | `misskey.create_reaction(note_id, reaction)` | 添加反应 |
-| `misskey.send_message(user_id, text)` | 发送私信 |
+| `misskey.send_message(user_id, text, file_id)` | 发送私信，可附带 Drive 文件 |
 | `misskey.show_user(user_id)` | 用户详情，含资料、个人备注与双方关系 |
 | `misskey.update_user_memo(user_id, memo)` | 写入个人备注，`None` 或空字符串删除；需 `write:account` 权限 |
 | `misskey.list_antennas()` | 获取天线 |
@@ -192,7 +192,7 @@ async with self.context.bot.actor_lock(event.user.id, event.user.handle):
 | `misskey.drive.download_bytes(file_id, thumbnail=..., max_bytes=...)` | 下载文件 |
 | `misskey.drive.upload_bytes(data, name=..., content_type=...)` | 上传文件，结果 `id` 为文件 ID |
 
-`visibility`：`public`、`home`、`followers`。`create_note` 与 `HandledResult` 暂不支持附件。
+`visibility`：`public`、`home`、`followers`。`create_note` 的 `file_ids` 至多 16 个。文件须属于机器人自己的 Drive，可先用 `drive.upload_bytes` 上传。`HandledResult` 通过 `self.handled(response, file_id)` 附带文件。
 
 `call_api` 用于调用上表未封装的 Misskey 端点，自动使用实例地址与机器人令牌，复用并发限制、超时与错误处理：
 

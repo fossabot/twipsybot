@@ -1171,6 +1171,80 @@ async def test_plugin_reply_to_bot_does_not_mention_sender(
     assert reply["text"] == "plugin reply"
 
 
+async def test_plugin_reply_can_attach_file(
+    make_bot: MakeBot,
+    make_plugin_dir: MakePluginDir,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+) -> None:
+    plugins_dir = make_plugin_dir(
+        "echo",
+        "from twipsybot.plugin import PLUGIN_API_VERSION, PluginBase\n\n\n"
+        "class EchoPlugin(PluginBase):\n"
+        "    api_version = PLUGIN_API_VERSION\n\n"
+        "    async def on_mention(self, event):\n"
+        "        return self.handled('plugin reply', 'file-1')\n\n"
+        "plugin = EchoPlugin\n",
+    )
+    bot = await make_bot(write_config(), plugins_dir=plugins_dir)
+
+    await bot.mention.handle({"type": "mention", "note": _MENTION_NOTE})
+
+    assert misskey_server.calls["notes/create"][0]["fileIds"] == ["file-1"]
+
+
+async def test_plugin_auto_post_can_attach_files(
+    make_bot: MakeBot,
+    make_plugin_dir: MakePluginDir,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+) -> None:
+    plugins_dir = make_plugin_dir(
+        "album",
+        "from twipsybot.plugin import PLUGIN_API_VERSION, PluginBase\n\n\n"
+        "class AlbumPlugin(PluginBase):\n"
+        "    api_version = PLUGIN_API_VERSION\n\n"
+        "    async def on_auto_post(self, event):\n"
+        "        return {'contents': ['plain', {'text': 'pic', 'file_ids': ['f1', 'f2']}]}\n\n"
+        "    async def on_auto_post_published(self, content):\n"
+        "        await self.context.storage.set(content, 'done')\n\n"
+        "plugin = AlbumPlugin\n",
+    )
+    bot = await make_bot(write_config(), plugins_dir=plugins_dir)
+    bot.runtime.running = True
+    bot.auto_post._PLUGIN_POST_INTERVAL_SECONDS = 0
+
+    await bot.auto_post.run()
+
+    first, second = misskey_server.calls["notes/create"]
+    assert "fileIds" not in first
+    assert (second["text"], second["fileIds"]) == ("pic", ["f1", "f2"])
+    assert await bot.db.get_plugin_data("album", "pic") == "done"
+
+
+async def test_plugin_chat_reply_can_attach_file(
+    make_bot: MakeBot,
+    make_plugin_dir: MakePluginDir,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+) -> None:
+    plugins_dir = make_plugin_dir(
+        "echo",
+        "from twipsybot.plugin import PLUGIN_API_VERSION, PluginBase\n\n\n"
+        "class EchoPlugin(PluginBase):\n"
+        "    api_version = PLUGIN_API_VERSION\n\n"
+        "    async def on_message(self, event):\n"
+        "        return self.handled('pic', 'f1')\n\n"
+        "plugin = EchoPlugin\n",
+    )
+    bot = await make_bot(write_config(), plugins_dir=plugins_dir)
+
+    await bot.chat.handle(_CHAT_MESSAGE)
+
+    [message] = misskey_server.calls["chat/messages/create-to-user"]
+    assert (message["text"], message["fileId"]) == ("pic", "f1")
+
+
 async def test_image_command_reply_to_bot_does_not_mention_sender(
     make_bot: MakeBot,
     write_config: WriteConfig,

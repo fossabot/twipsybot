@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -8,6 +9,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from loguru import logger
 
+from ...plugin.events import AutoPostItem
 from ...plugin.manager import HookResult
 from ...shared.config_keys import ConfigKeys
 from ...shared.logs import format_log_text
@@ -211,17 +213,25 @@ class AutoPostService:
     async def _post_plugin_contents(
         self,
         plugin_name: str,
-        contents: list[str],
+        contents: Sequence[str | AutoPostItem],
         visibility: str | None,
         max_posts: int | None,
         local_only: bool | None,
     ) -> bool:
         posted_any = False
-        for i, content in enumerate(contents):
+        for i, item in enumerate(contents):
             if not await self._allowed(max_posts):
                 return posted_any
+            content, file_ids = (
+                (item, None)
+                if isinstance(item, str)
+                else (item["text"], item.get("file_ids"))
+            )
             await self.bot.misskey.create_note(
-                content, visibility=visibility, local_only=local_only
+                content,
+                visibility=visibility,
+                local_only=local_only,
+                file_ids=file_ids,
             )
             await self.bot.plugin_manager.confirm_auto_post_published(
                 plugin_name, content

@@ -1,12 +1,12 @@
 [project]
 name = "twipsybot"
-version = "0.21.0"
+version = "0.22.0"
 description = "AI-powered Misskey bot with OpenAI-compatible APIs."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "OREEkE" }]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 dependencies = [
     "aiohttp==3.14.3",
@@ -55,7 +55,7 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 
 [tool.pyright]
-pythonVersion = "3.11"
+pythonVersion = "3.12"
 typeCheckingMode = "basic"
 include = ["twipsybot", "plugins", "tests"]
 extraPaths = ["tests"]

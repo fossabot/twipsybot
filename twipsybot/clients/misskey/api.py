@@ -3,7 +3,7 @@ import json
 import random
 import re
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import aiohttp
@@ -199,7 +199,7 @@ class MisskeyAPI:
         visibility: str | None = None,
         reply_id: str | None = None,
         local_only: bool | None = None,
-        file_ids: list[str] | None = None,
+        file_ids: Sequence[str] | None = None,
     ) -> dict[str, Any]:
         data: dict[str, Any] = {
             "text": self._limit_text(text, NOTE_TEXT_MAX_LENGTH, "note"),

@@ -44,6 +44,7 @@ _EVENT_HOOKS = {
     "on_auto_post",
 }
 _AUTO_POST_VISIBILITIES = frozenset(get_args(AutoPostVisibility))
+_MAX_FILE_IDS = 16
 _CALLBACK_HOOKS = {"on_auto_post_published"}
 _PLUGIN_HOOKS = _EVENT_HOOKS | _CALLBACK_HOOKS
 _ASYNC_PLUGIN_METHODS = {
@@ -59,11 +60,32 @@ def _non_empty_text(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def _valid_file_ids(value: Any) -> bool:
+    return (
+        isinstance(value, list)
+        and len(value) <= _MAX_FILE_IDS
+        and len(set(map(str, value))) == len(value)
+        and all(_non_empty_text(file_id) for file_id in value)
+    )
+
+
 def _valid_handled(result: dict[str, Any]) -> bool:
     return (
-        set(result) == {"handled", "response"}
+        {"handled", "response"} <= set(result) <= {"handled", "response", "file_id"}
         and result["handled"] is True
         and isinstance(result["response"], str)
+        and ("file_id" not in result or _non_empty_text(result["file_id"]))
+    )
+
+
+def _valid_auto_item(item: Any) -> bool:
+    if isinstance(item, str):
+        return _non_empty_text(item)
+    return (
+        isinstance(item, dict)
+        and {"text"} <= set(item) <= {"text", "file_ids"}
+        and _non_empty_text(item["text"])
+        and _valid_file_ids(item.get("file_ids", []))
     )
 
 
@@ -81,9 +103,9 @@ def _valid_auto_post(result: dict[str, Any]) -> bool:
         contents = result["contents"]
         visibility = result.get("visibility", "public")
         return (
-            isinstance(contents, list)
+            isinstance(contents, list | tuple)
             and bool(contents)
-            and all(_non_empty_text(content) for content in contents)
+            and all(_valid_auto_item(content) for content in contents)
             and isinstance(visibility, str)
             and visibility in _AUTO_POST_VISIBILITIES
         )

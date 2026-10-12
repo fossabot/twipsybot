@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.22.0 - 2026-10-12
+
+MIT 许可、Python 3.12+、附件支持、精简镜像
+
+### Added
+
+- 自动发帖 `contents` 支持 `AutoPostItem`，`HandledResult` 与 `self.handled()` 支持 `file_id`
+- `misskey.create_note()` 新增 `file_ids`，`misskey.send_message()` 新增 `file_id`
+
+### Changed
+
+- 项目许可证由 AGPL-3.0 改为 MIT
+- Python 版本提升至 3.12+
+- Docker 基础镜像改为 `python:3.12-alpine`，并在构建阶段清理 pip、测试与字节码缓存
+
+<br>
+
 ## 0.21.0 - 2026-10-11
 
 插件调用任意 Misskey API

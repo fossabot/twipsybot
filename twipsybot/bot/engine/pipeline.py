@@ -86,14 +86,16 @@ class ResponsePipeline:
                     await self._limits.record_response(user_id, count_turn=False)
                 return
         source: Source
+        file_id: str | None = None
         if results := await self._plugins.call_plugin_hook(hook, event):
             name, result = results[0]
             logger.debug(f"{hook} handled by plugin: {name}")
             text, source = result["response"], "plugin"
+            file_id = result.get("file_id")
         else:
             text, source = await generate(await self._augment(hook, event)), "ai"
         if not text:
             return
-        await deliver(Reply(text), source)
+        await deliver(Reply(text, file_id), source)
         if user_id:
             await self._limits.record_response(user_id, count_turn=True)

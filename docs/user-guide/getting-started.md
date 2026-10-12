@@ -69,11 +69,11 @@ docker compose logs -f twipsybot
 
 ## 本地运行（可选）
 
-需要 Python 3.11+ 与 [uv](https://docs.astral.sh/uv/)：
+需要 Python 3.12+ 与 [uv](https://docs.astral.sh/uv/)：
 
 ```bash
 git clone https://github.com/oreeke/twipsybot.git && cd twipsybot
-uv sync --python 3.11
+uv sync --python 3.12
 uv run twipsybot cfg
 uv run twipsybot run
 ```

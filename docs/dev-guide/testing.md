@@ -34,7 +34,7 @@ uvx pre-commit run --all-files
 ```
 
 - Pyright 以 basic 模式检查 `twipsybot`、`plugins` 与 `tests`。
-- pre-commit 检查锁文件、自动修复 Ruff lint 与格式，并执行 `pyupgrade --py311-plus`。
+- pre-commit 检查锁文件、自动修复 Ruff lint 与格式。
 
 ## 提交前
 

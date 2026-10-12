@@ -11,6 +11,7 @@ from .contracts import (
 )
 from .events import (
     AutoPostEvent,
+    AutoPostItem,
     AutoPostResult,
     ContextResult,
     FileRef,
@@ -27,6 +28,7 @@ __all__ = (
     "PLUGIN_API_VERSION",
     "APIResponseError",
     "AutoPostEvent",
+    "AutoPostItem",
     "AutoPostResult",
     "BlockedURLError",
     "BotControl",

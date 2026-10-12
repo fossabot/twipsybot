@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 
@@ -23,7 +23,7 @@ class KeyedAsyncLock:
         self._entries: dict[str, _Entry] = {}
 
     @asynccontextmanager
-    async def hold(self, key: str | None) -> AsyncIterator[None]:
+    async def hold(self, key: str | None) -> AsyncGenerator[None]:
         if key is None:
             yield
             return

@@ -23,7 +23,7 @@ from twipsybot.plugin import (
     PluginConfig,
 )
 from twipsybot.plugin.events import build_hook_event
-from twipsybot.plugin.manager import PluginManager
+from twipsybot.plugin.manager import PluginManager, _valid_auto_post, _valid_handled
 from twipsybot.plugin.services import DriveServiceAdapter, MisskeyServiceAdapter
 from twipsybot.shared.exceptions import ConfigurationError
 
@@ -64,7 +64,55 @@ async def test_misskey_service_adapter_sends_message() -> None:
     result = await service.send_message("admin-id", "alert")
 
     assert result == {"id": "message-1"}
-    send_message.assert_awaited_once_with("admin-id", "alert")
+    send_message.assert_awaited_once_with("admin-id", "alert", None)
+
+
+async def test_misskey_service_adapter_create_note_with_files() -> None:
+    create_note = AsyncMock(return_value={})
+    service = MisskeyServiceAdapter(
+        SimpleNamespace(drive=SimpleNamespace(), create_note=create_note)
+    )
+
+    await service.create_note("hi", file_ids=("f1", "f2"))
+    await service.create_note("plain")
+
+    assert create_note.await_args_list[0].args == ("hi", None, None, None, ("f1", "f2"))
+    assert create_note.await_args_list[1].args == ("plain", None, None, None, None)
+
+
+@pytest.mark.parametrize(
+    ("result", "valid"),
+    [
+        ({"handled": True, "response": "ok"}, True),
+        ({"handled": True, "response": "ok", "file_id": "f1"}, True),
+        ({"handled": True, "response": "ok", "file_id": ""}, False),
+        ({"handled": True, "response": "ok", "file_id": ["f1"]}, False),
+        ({"handled": True, "response": "ok", "extra": 1}, False),
+        ({"handled": True}, False),
+    ],
+)
+def test_handled_result_validation(result: dict[str, Any], valid: bool) -> None:
+    assert _valid_handled(result) is valid
+
+
+@pytest.mark.parametrize(
+    ("contents", "valid"),
+    [
+        (["text"], True),
+        ([{"text": "text"}], True),
+        (["a", {"text": "b", "file_ids": ["f1", "f2"]}], True),
+        ([{"text": "b", "file_ids": [f"f{i}" for i in range(17)]}], False),
+        ([{"text": "b", "file_ids": ["f1", "f1"]}], False),
+        ([{"text": "b", "file_ids": [""]}], False),
+        ([{"text": "b", "file_ids": "f1"}], False),
+        ([{"text": " "}], False),
+        ([{"file_ids": ["f1"]}], False),
+        ([{"text": "b", "extra": 1}], False),
+        ([1], False),
+    ],
+)
+def test_auto_post_contents_validation(contents: list[Any], valid: bool) -> None:
+    assert _valid_auto_post({"contents": contents}) is valid
 
 
 async def test_misskey_service_adapter_user_endpoints() -> None:

@@ -49,7 +49,7 @@ export default withMermaid(
       sidebar: {
         "/user-guide/": [
           {
-            text: "开始使用",
+            text: "开始",
             items: [
               { text: "快速开始", link: "/user-guide/getting-started" },
               { text: "配置", link: "/user-guide/configuration" },
@@ -99,7 +99,7 @@ export default withMermaid(
         ],
         "/dev-guide/": [
           {
-            text: "开发指南",
+            text: "开发",
             items: [
               { text: "概览", link: "/dev-guide/" },
               { text: "开发环境", link: "/dev-guide/setup" },
