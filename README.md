@@ -13,14 +13,14 @@
 <a href="https://www.python.org/downloads">
     <img alt="python 3.12+" src="https://img.shields.io/badge/python-3.12+-FFD43B.svg?style=for-the-badge&labelColor=303030&logo=python&logoColor=3776AB"></a>
 <a href="https://github.com/misskey-dev/misskey">
-    <img alt="misskey 2025+" src="https://img.shields.io/badge/misskey-2025+-acea31.svg?style=for-the-badge&labelColor=303030&logo=misskey&logoColor=acea31"></a>
+    <img alt="misskey 2026+" src="https://img.shields.io/badge/misskey-2026+-acea31.svg?style=for-the-badge&labelColor=303030&logo=misskey&logoColor=acea31"></a>
 <a href="https://github.com/oreeke/twipsybot/pkgs/container/twipsybot">
     <img alt="docker ghcr" src="https://img.shields.io/badge/docker-ghcr-2496ed.svg?style=for-the-badge&labelColor=303030&logo=docker&logoColor=2496ed"></a>
 
-<br>它有时是抽象气氛组，有时是靠谱小帮手。它把所看所想寄向联邦宇宙，也把星尘里的帖子带回家。
-
-··· [使用手册](https://twipsybot.oreeke.com/) ··· [开发指南](https://twipsybot.oreeke.com/dev-guide/) ··· [变更日志](./CHANGELOG.md) ···
+<br>··· [使用手册](https://twipsybot.oreeke.com/) ··· [开发指南](https://twipsybot.oreeke.com/dev-guide/) ··· [变更日志](./CHANGELOG.md) ···
 <br><br>💌<br><br>
+
+</div>
 
 <div align="left">
 
@@ -35,6 +35,6 @@ docker compose exec twipsybot twipsybot cfg
 
 </div>
 
-![Screenshot](assets/connect.png)
-
-</div>
+<p align="center">
+    <img src="assets/connect.png" alt="Screenshot" width="100%">
+</p>

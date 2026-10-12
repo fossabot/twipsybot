@@ -13,7 +13,7 @@ description: TwipsyBot 的部署、配置、功能、插件与开发文档。
 
 # TwipsyBot
 
-一只轻量、可扩展的 [Misskey](https://misskey-hub.net/) AI 机器人。
+**一只轻量、可扩展的 [Misskey](https://misskey-hub.net/) AI 机器人**
 
 </div>
 
