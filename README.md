@@ -6,7 +6,7 @@
 
 <h1>TwipsyBot</h1>
 
-<br>**一只轻量、可扩展的 Misskey AI 机器人**
+<br>**一只轻量、插件化的 Misskey AI 机器人**
 
 [oreeke.com/@ai](https://oreeke.com/@ai)
 
