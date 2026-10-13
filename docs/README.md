@@ -6,7 +6,7 @@ description: TwipsyBot 的部署、配置、功能、插件与开发文档。
 <div align="center" style="text-align: center">
 
 <p align="center">
-    <img src="/twipsybot.png" alt="TwipsyBot" width="200" height="200" style="display: block; margin: 0 auto">
+    <img src="./public/twipsybot.png" alt="TwipsyBot" width="200" height="200" style="display: block; margin: 0 auto">
 </p>
 
 <br>
@@ -27,12 +27,12 @@ description: TwipsyBot 的部署、配置、功能、插件与开发文档。
 | --- | --- |
 | [**快速开始**](user-guide/getting-started.md) | 部署与验证 |
 | [**配置**](user-guide/configuration.md) | TUI、YAML、生效方式与模型 |
-| [**功能**](/user-guide/features/) | 对话、发帖、时间线与管理命令 |
-| [**插件**](/user-guide/plugins/) | 内置插件与启用方式 |
+| [**功能**](user-guide/features/) | 对话、发帖、时间线与管理命令 |
+| [**插件**](user-guide/plugins/) | 内置插件与启用方式 |
 | [**运维**](user-guide/operations.md) | 状态、备份与升级 |
 | [**故障排查**](user-guide/troubleshooting.md) | 常见问题定位 |
 | [**配置参考**](user-guide/reference/configuration.md) | 全部字段与默认值 |
-| [**开发**](/dev-guide/) | 架构、插件 API 与测试 |
+| [**开发**](dev-guide/) | 架构、插件 API 与测试 |
 
 </div>
 
@@ -42,14 +42,14 @@ description: TwipsyBot 的部署、配置、功能、插件与开发文档。
 
 | 提供商 | 兼容性 | 多模态 |
 | --- | :---: | :---: |
-| [OpenAI](https://platform.openai.com/docs/api-reference/introduction) | ✅ | 💬 👁️ 🎨 |
-| [DeepSeek](https://api-docs.deepseek.com/) | ✅ | 💬 👁️ |
-| [GLM](https://docs.bigmodel.cn/cn/guide/develop/openai/introduction) | ✅ | 💬 👁️ 🎨 |
-| [Kimi](https://platform.kimi.com/docs/api/overview) | ✅ | 💬 👁️ |
-| [Qwen](https://www.alibabacloud.com/help/zh/model-studio/compatibility-of-openai-with-dashscope) | ✅ | 💬 👁️ 🎨 |
-| [Gemini](https://ai.google.dev/gemini-api/docs/openai) | ✅ | 💬 👁️ 🎨 |
-| [Grok](https://docs.x.ai/developers/quickstart) | ✅ | 💬 👁️ 🎨 |
-| [Ollama](https://docs.ollama.com/api/openai-compatibility) | ✅ | 💬 👁️ 🎨 |
+| [**OpenAI**](https://platform.openai.com/docs/api-reference/introduction) | ✅ | 💬 👁️ 🎨 |
+| [**DeepSeek**](https://api-docs.deepseek.com/) | ✅ | 💬 👁️ |
+| [**GLM**](https://docs.bigmodel.cn/cn/guide/develop/openai/introduction) | ✅ | 💬 👁️ 🎨 |
+| [**Kimi**](https://platform.kimi.com/docs/api/overview) | ✅ | 💬 👁️ |
+| [**Qwen**](https://www.alibabacloud.com/help/zh/model-studio/compatibility-of-openai-with-dashscope) | ✅ | 💬 👁️ 🎨 |
+| [**Gemini**](https://ai.google.dev/gemini-api/docs/openai) | ✅ | 💬 👁️ 🎨 |
+| [**Grok**](https://docs.x.ai/developers/quickstart) | ✅ | 💬 👁️ 🎨 |
+| [**Ollama**](https://docs.ollama.com/api/openai-compatibility) | ✅ | 💬 👁️ 🎨 |
 
 </div>
 
