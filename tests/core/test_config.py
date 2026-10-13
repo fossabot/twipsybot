@@ -127,8 +127,9 @@ def test_allow_nets_are_normalized_and_validated(write_config: WriteConfig) -> N
     config = write_config(system={"allow_nets": ["198.18.0.1/15", "::1"]})
 
     assert config.get(ConfigKeys.SYSTEM_ALLOW_NETS) == ["198.18.0.0/15", "::1/128"]
+    invalid = write_config(load=False, system={"allow_nets": ["nope"]})
     with pytest.raises(ConfigurationError, match="allow_nets"):
-        write_config(load=False, system={"allow_nets": ["nope"]}).load()
+        invalid.load()
 
 
 def test_prompt_files_resolve_from_root(

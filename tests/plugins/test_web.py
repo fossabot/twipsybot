@@ -232,8 +232,9 @@ async def test_web_blocks_private_targets(
 ) -> None:
     plugin, server = await make_web(_app())
 
+    page_url = str(server.make_url("/page"))
     with pytest.raises(BlockedURLError):
-        await plugin._fetch(str(server.make_url("/page")))
+        await plugin._fetch(page_url)
     assert await plugin._page("http://localhost:1/") is None
     assert await plugin._page("http://[::1]/") is None
     assert await plugin._page("http://169.254.169.254/latest") is None
