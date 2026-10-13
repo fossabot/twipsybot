@@ -25,12 +25,3 @@ TIMELINE_CHANNELS = frozenset(
 )
 NOTE_CHANNELS = frozenset({*TIMELINE_CHANNELS, ChannelType.ANTENNA.value})
 CHAT_CHANNELS = frozenset({ChannelType.CHAT_USER.value, ChannelType.CHAT_ROOM.value})
-
-
-__all__ = (
-    "CHAT_CHANNELS",
-    "NOTE_CHANNELS",
-    "TIMELINE_CHANNELS",
-    "ChannelSpec",
-    "ChannelType",
-)

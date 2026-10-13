@@ -13,8 +13,6 @@ from textual.widgets import Input, Label, Log, Static
 
 from ..shared.logs import LOG_LINE
 
-__all__ = ("LogTail", "LogsPage")
-
 _MIN_LINES, _DEFAULT_LINES, _MAX_LINES = 50, 200, 5000
 _CHUNK = 64 * 1024
 _RELOAD_BYTES = 1024 * 1024

@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from typing import Any
 
-from ...shared.exceptions import APIConnectionError
+from ...shared.errors import APIConnectionError
 
 
 def extract_responses_text(response: Any) -> str:

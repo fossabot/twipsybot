@@ -4,7 +4,7 @@ import click
 from dotenv import load_dotenv
 
 from ..shared.config import Config
-from ..shared.exceptions import ConfigurationError
+from ..shared.errors import ConfigurationError
 from . import main as app_main
 
 

@@ -38,8 +38,6 @@ from ..shared.settings import (
     set_dotted,
 )
 
-__all__ = ("Kind", "Section", "Spec", "build_sections", "overlay", "to_widget")
-
 Kind = Literal[
     "bool",
     "choice",

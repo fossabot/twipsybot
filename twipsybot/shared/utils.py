@@ -1,7 +1,5 @@
 from typing import Any
 
-__all__ = ("normalize_tokens",)
-
 
 def normalize_tokens(value: Any, *, lower: bool = False) -> list[str]:
     if value is None or isinstance(value, bool):

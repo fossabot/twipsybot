@@ -14,7 +14,7 @@ from plugins.web.plugin import WebPlugin
 from twipsybot.clients.fetch.public import PublicFetcher
 from twipsybot.plugin import MessageEvent, UserRef
 from twipsybot.plugin.services import HttpServiceAdapter
-from twipsybot.shared.exceptions import BlockedURLError
+from twipsybot.shared.errors import BlockedURLError
 
 _HTML = (
     "<html><head><title>Doc</title><style>p{}</style></head><body>"

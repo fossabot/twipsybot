@@ -15,8 +15,7 @@ description: 配置 TwipsyBot 轮转与定时发帖、管理员手动发帖和�
 | `schedule` | `times` 中的每个时间点，按主机时区 | 不受限，不计数 |
 
 - `times` 最多 24 个，相邻（含跨午夜）至少 5 分钟；`interval` 同样不少于 5 分钟。
-- 每日上限用尽或缺少有效提示词时跳过本次。
-- 提示词前会附加分钟级时间标记，减少 [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching) 重复命中；要丰富主题请用 [Topics](../plugins/topics.md)。
+- 每日上限用尽或缺少有效提示词时跳过本次；要丰富主题请用 [Topics](../plugins/topics.md)。
 - 插件一次返回多篇时间隔 10 秒发布，轮转模式下每篇都计入 `daily_max`。
 
 建议先以低曝光试运行：

@@ -12,6 +12,7 @@ from loguru import logger
 from pydantic import Field, field_validator
 
 from twipsybot.plugin import (
+    USER_AGENT,
     AutoPostEvent,
     AutoPostResult,
     LineText,
@@ -23,13 +24,9 @@ from twipsybot.plugin import (
 
 _TOPIC_SUFFIXES = {".md", ".txt"}
 _RSS_TIMEOUT = aiohttp.ClientTimeout(total=60)
-_RSS_HEADERS = {"User-Agent": "Twipsy-RSS"}
 _RSS_RECENT_KEYS_LIMIT = 2000
-_LIST_AI_PREFIX = "以{topic}为主题，"
-_RSS_AI_PREFIX = (
-    "发表一段感想和相关知识，不超过150字。\n"
-    "不加链接，不加引号：\n\n{summary}\n\n{title}\n{link}"
-)
+_LIST_AI_PREFIX = "以{topic}为主题\n\n"
+_RSS_AI_PREFIX = "参考以下文章，不加链接：\n\n{summary}\n\n{title}\n{link}\n\n"
 
 
 class _Config(PluginConfig):
@@ -201,7 +198,9 @@ class TopicsPlugin(PluginBase):
 
     @staticmethod
     def _rss_session() -> aiohttp.ClientSession:
-        return aiohttp.ClientSession(timeout=_RSS_TIMEOUT, headers=_RSS_HEADERS)
+        return aiohttp.ClientSession(
+            timeout=_RSS_TIMEOUT, headers={"User-Agent": USER_AGENT}
+        )
 
     async def _fetch_all_rss_candidates(self, urls: list[str]) -> list[dict[str, Any]]:
         async with self._rss_session() as session:
@@ -374,17 +373,11 @@ class TopicsPlugin(PluginBase):
             logger.warning(f"Invalid rss_ai_prefix format: {e}")
             return title
         try:
-            text = await self.context.openai.generate_text(
-                prompt,
-                self.context.openai.system_prompt or None,
-                max_tokens=self.context.openai.max_tokens,
-                temperature=self.context.openai.temperature,
-            )
+            text = await self.context.bot.generate_auto_post(prompt)
         except Exception as e:
             logger.warning(f"RSS title rewrite failed: {e}")
             return title
-        first_line = (text or "").strip().splitlines()[0:1]
-        return first_line[0] if first_line and first_line[0] else title
+        return (text or "").strip() or title
 
     async def _get_recent_rss_keys(self) -> list[str]:
         try:

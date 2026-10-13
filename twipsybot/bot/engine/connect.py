@@ -5,9 +5,9 @@ from loguru import logger
 
 from ...clients.misskey.api import MisskeyAPI
 from ...clients.misskey.channels import ChannelSpec, ChannelType
-from ...clients.misskey.streaming import StreamingClient
+from ...clients.misskey.stream import StreamingClient
 from ...shared.config import Config
-from ...shared.config_keys import ConfigKeys
+from ...shared.keys import ConfigKeys
 from ...shared.utils import normalize_tokens
 from .runtime import BotRuntime
 

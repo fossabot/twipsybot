@@ -9,11 +9,11 @@ from typing import Any
 import aiohttp
 from loguru import logger
 
-from ...shared.constants import (
+from ...shared.consts import (
     API_MAX_RETRIES,
     MISSKEY_MAX_CONCURRENCY,
 )
-from ...shared.exceptions import (
+from ...shared.errors import (
     APIBadRequestError,
     APIConnectionError,
     APIFileTooLargeError,
@@ -24,10 +24,8 @@ from ...shared.exceptions import (
     AuthenticationError,
 )
 from ..fetch.public import PublicFetcher
+from .bridge import TCPClient
 from .drive import MisskeyDrive
-from .transport import TCPClient
-
-__all__ = ("MisskeyAPI",)
 
 NOTE_TEXT_MAX_LENGTH = 3000
 CHAT_TEXT_MAX_LENGTH = 2000

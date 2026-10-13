@@ -8,8 +8,6 @@ from textual.widgets import Button, Select, Static
 
 from ..shared.config import POST_MAX_TIMES
 
-__all__ = ("TimesField",)
-
 _HOURS = [(f"{h:02d}", f"{h:02d}") for h in range(24)]
 _MINUTES = [(f"{m:02d}", f"{m:02d}") for m in range(60)]
 _STEP_MINUTES = 60

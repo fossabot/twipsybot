@@ -26,8 +26,6 @@ from .services import (
     OpenAIServiceAdapter,
 )
 
-__all__ = ("HookResult", "PluginManager", "discover_plugin_classes")
-
 PluginReloadStatus = Literal["enabled", "disabled", "failed", "unknown", "unavailable"]
 HookResult = tuple[str, dict[str, Any]]
 
@@ -109,11 +107,8 @@ def _valid_auto_post(result: dict[str, Any]) -> bool:
             and isinstance(visibility, str)
             and visibility in _AUTO_POST_VISIBILITIES
         )
-    if "prompt" in keys and keys <= {"prompt", "timestamp"}:
-        return (
-            _non_empty_text(result["prompt"])
-            and type(result.get("timestamp", 0)) is int
-        )
+    if keys == {"prompt"}:
+        return _non_empty_text(result["prompt"])
     return False
 
 

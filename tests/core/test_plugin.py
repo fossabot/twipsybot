@@ -24,8 +24,12 @@ from twipsybot.plugin import (
 )
 from twipsybot.plugin.events import build_hook_event
 from twipsybot.plugin.manager import PluginManager, _valid_auto_post, _valid_handled
-from twipsybot.plugin.services import DriveServiceAdapter, MisskeyServiceAdapter
-from twipsybot.shared.exceptions import ConfigurationError
+from twipsybot.plugin.services import (
+    BotControlAdapter,
+    DriveServiceAdapter,
+    MisskeyServiceAdapter,
+)
+from twipsybot.shared.errors import ConfigurationError
 
 
 def _context(config: dict[str, Any], **services: Any) -> Any:
@@ -78,6 +82,16 @@ async def test_misskey_service_adapter_create_note_with_files() -> None:
 
     assert create_note.await_args_list[0].args == ("hi", None, None, None, ("f1", "f2"))
     assert create_note.await_args_list[1].args == ("plain", None, None, None, None)
+
+
+async def test_bot_control_adapter_delegates_auto_post_generation() -> None:
+    generate = AsyncMock(return_value="generated")
+    adapter = BotControlAdapter(
+        SimpleNamespace(auto_post=SimpleNamespace(generate=generate))
+    )
+
+    assert await adapter.generate_auto_post("前缀 ") == "generated"
+    generate.assert_awaited_once_with("前缀 ")
 
 
 @pytest.mark.parametrize(

@@ -16,8 +16,8 @@ from conftest import (
 )
 
 from twipsybot.bot.flows.post import AutoPostService
-from twipsybot.shared.config_keys import ConfigKeys
-from twipsybot.shared.exceptions import APIBadRequestError
+from twipsybot.shared.errors import APIBadRequestError
+from twipsybot.shared.keys import ConfigKeys
 from twipsybot.shared.settings import read_settings
 
 _MENTION_NOTE = {
@@ -409,31 +409,7 @@ async def test_auto_post_counter_self_corrects_after_date_change(
     assert await bot.db.get_auto_post_state() == (bot.auto_post._today(), 0)
 
 
-async def test_auto_post_preserves_zero_timestamp(
-    make_bot: MakeBot,
-    make_plugin_dir: MakePluginDir,
-    write_config: WriteConfig,
-    openai_server: FakeOpenAIServer,
-) -> None:
-    plugins_dir = make_plugin_dir(
-        "epoch",
-        "from twipsybot.plugin import PLUGIN_API_VERSION, PluginBase\n\n"
-        "class EpochPlugin(PluginBase):\n"
-        "    api_version = PLUGIN_API_VERSION\n"
-        "    async def on_auto_post(self, event):\n"
-        "        return {'prompt': 'epoch ', 'timestamp': 0}\n\n"
-        "plugin = EpochPlugin\n",
-    )
-    bot = await make_bot(write_config(), plugins_dir=plugins_dir)
-    bot.runtime.running = True
-
-    await bot.auto_post.run()
-
-    prompt = openai_server.calls[0]["messages"][-1]["content"]
-    assert prompt == "[0] epoch 写一条随笔"
-
-
-async def test_auto_post_uses_highest_priority_prompt_and_timestamp(
+async def test_auto_post_uses_highest_priority_prompt(
     make_bot: MakeBot,
     make_plugin_dir: MakePluginDir,
     write_config: WriteConfig,
@@ -445,7 +421,7 @@ async def test_auto_post_uses_highest_priority_prompt_and_timestamp(
         "class HighPlugin(PluginBase):\n"
         "    api_version = PLUGIN_API_VERSION\n"
         "    async def on_auto_post(self, event):\n"
-        "        return {'prompt': 'high ', 'timestamp': 1}\n\n"
+        "        return {'prompt': 'high '}\n\n"
         "plugin = HighPlugin\n",
         config="enabled: true\npriority: 20\n",
     )
@@ -455,7 +431,7 @@ async def test_auto_post_uses_highest_priority_prompt_and_timestamp(
         "class LowPlugin(PluginBase):\n"
         "    api_version = PLUGIN_API_VERSION\n"
         "    async def on_auto_post(self, event):\n"
-        "        return {'prompt': 'low ', 'timestamp': 2}\n\n"
+        "        return {'prompt': 'low '}\n\n"
         "plugin = LowPlugin\n",
         config="enabled: true\npriority: 10\n",
     )
@@ -465,7 +441,39 @@ async def test_auto_post_uses_highest_priority_prompt_and_timestamp(
     await bot.auto_post.run()
 
     prompt = openai_server.calls[0]["messages"][-1]["content"]
-    assert prompt == "[1] high 写一条随笔"
+    assert prompt == "high 写一条随笔"
+
+
+async def test_auto_post_generate_prepends_plugin_prompt(
+    make_bot: MakeBot,
+    write_config: WriteConfig,
+    openai_server: FakeOpenAIServer,
+) -> None:
+    bot = await make_bot(write_config())
+
+    assert await bot.auto_post.generate("前缀 ") == DEFAULT_AI_REPLY
+
+    messages = openai_server.calls[0]["messages"]
+    assert messages[0]["content"] == "你是测试机器人"
+    assert messages[-1]["content"] == "前缀 写一条随笔"
+
+
+async def test_auto_post_without_prompt_is_skipped(
+    make_bot: MakeBot,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+    openai_server: FakeOpenAIServer,
+) -> None:
+    bot = await make_bot(write_config(autopost={"prompt": ""}))
+    bot.runtime.running = True
+
+    with pytest.raises(ValueError, match="Missing prompt"):
+        await bot.auto_post.generate()
+    await bot.auto_post.run()
+
+    assert not openai_server.calls
+    assert "notes/create" not in misskey_server.calls
+    assert bot.auto_post.posts_today == 0
 
 
 async def test_blacklisted_user_is_ignored(

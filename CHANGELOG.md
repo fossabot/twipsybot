@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.23.0 - 2026-10-13
+
+一致性修整
+
+### Added
+
+- 插件 `bot.generate_auto_post(plugin_prompt)`，可拼接发帖提示词
+- 公共 `USER_AGENT` 常量，`twipsybot.plugin` 同步导出
+
+### Changed
+
+- Topics 的 RSS 改写复用 `bot.generate_auto_post`
+- 整理内部模块
+
+### Removed
+
+- 自动发帖不再附加时间标记，`PromptModificationResult` 不再支持 `timestamp`
+
+<br>
+
 ## 0.22.0 - 2026-10-12
 
 MIT 许可、Python 3.12+、附件支持、精简镜像

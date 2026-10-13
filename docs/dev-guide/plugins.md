@@ -142,7 +142,6 @@ return {"prompt": "围绕开源维护写一篇短文。"}
 - `contents` 直接发布、不调用 AI；每项为文本或 `AutoPostItem`。`prompt` 置于全局自动发帖提示词之前，一并交给 AI 生成。文本均须非空。
 - 多插件返回时 `contents` 优先于 `prompt`，同类取优先级最高者；多篇间隔 10 秒发布。
 - 轮转模式下两者都受 `autopost.daily_max` 约束，定时模式不受限。
-- `PromptModificationResult` 可附带分钟级整数 `timestamp`。
 - `on_auto_post_published(content)` 仅在本插件 `AutoPostResult` 的内容发布成功后调用，适合提交去重记录或推进轮换位置。
 
 ## PluginContext
@@ -212,7 +211,7 @@ async with self.context.http.open(url) as resp:
     body = await self.context.http.read(resp, 1024 * 1024)
 ```
 
-下载外部 URL 一律用 `http`，不要自建会话：仅访问公网 `http(s)`，重定向逐跳校验，违规抛出 `BlockedURLError`。可传 `allow=lambda url: bool` 追加自己的规则；`read` 超限抛出 `ValueError`，`truncate=True` 则截断。管理员配置的固定端点可自建会话。
+下载外部 URL 一律用 `http`，不要自建会话：仅访问公网 `http(s)`，重定向逐跳校验，违规抛出 `BlockedURLError`。可传 `allow=lambda url: bool` 追加自己的规则；`read` 超限抛出 `ValueError`，`truncate=True` 则截断。固定端点（如 RSS 地址、外部 API）可自建会话。通用请求头 `User-Agent` 用 `twipsybot.plugin.USER_AGENT`。
 
 ### OpenAI 与 Bot
 
@@ -227,6 +226,7 @@ async with self.context.http.open(url) as resp:
 | `bot.actor_lock(user_id, username)` | 串行处理同一用户 |
 | `bot.load_antenna_selectors()` | 读取天线选择器 |
 | `bot.resolve_antenna_ids(selectors)` | 解析天线 ID |
+| `bot.generate_auto_post(plugin_prompt)` | `plugin_prompt + autopost.prompt` |
 
 ## 失败处理
 

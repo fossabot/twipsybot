@@ -3,7 +3,7 @@ from typing import Any, Literal
 
 import openai
 
-from ...shared.constants import REQUEST_TIMEOUT
+from ...shared.consts import REQUEST_TIMEOUT
 
 TokenParam = Literal["max_tokens", "max_completion_tokens"]
 

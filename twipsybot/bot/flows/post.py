@@ -11,7 +11,7 @@ from loguru import logger
 
 from ...plugin.events import AutoPostItem
 from ...plugin.manager import HookResult
-from ...shared.config_keys import ConfigKeys
+from ...shared.keys import ConfigKeys
 from ...shared.logs import format_log_text
 from ..engine.pipeline import Reply
 
@@ -254,9 +254,7 @@ class AutoPostService:
             logger.info(f"Plugin {name} requested prompt modification: {plugin_prompt}")
         try:
             content = await self._create_ai_post(
-                self.bot.config.get(ConfigKeys.POST_PROMPT, ""),
-                plugin_prompt,
-                result.get("timestamp"),
+                self.bot.config.get(ConfigKeys.POST_PROMPT, ""), plugin_prompt
             )
         except ValueError as e:
             logger.warning(f"Auto-post failed; skipping this run: {e}")
@@ -268,17 +266,11 @@ class AutoPostService:
         self,
         prompt: str,
         plugin_prompt: str = "",
-        timestamp_override: int | None = None,
         *,
         visibility: str | None = None,
         local_only: bool | None = None,
     ) -> str:
-        content = await self._generate_post(
-            self.bot.system_prompt,
-            prompt,
-            plugin_prompt,
-            timestamp_override,
-        )
+        content = await self.generate(plugin_prompt, prompt)
         await self.bot.misskey.create_note(
             content,
             visibility=(
@@ -294,21 +286,11 @@ class AutoPostService:
         )
         return content
 
-    async def _generate_post(
-        self,
-        system_prompt: str,
-        prompt: str,
-        plugin_prompt: str,
-        timestamp_override: int | None = None,
-    ) -> str:
+    async def generate(self, plugin_prompt: str = "", prompt: str | None = None) -> str:
+        if prompt is None:
+            prompt = self.bot.config.get(ConfigKeys.POST_PROMPT, "")
         if not prompt:
             raise ValueError("Missing prompt")
-        timestamp_min = (
-            timestamp_override
-            if timestamp_override is not None
-            else int(datetime.now(UTC).timestamp() // 60)
-        )
-        full_prompt = f"[{timestamp_min}] {plugin_prompt}{prompt}"
         return await self.bot.openai.generate_text(
-            full_prompt, system_prompt, **self.bot.ai_config
+            f"{plugin_prompt}{prompt}", self.bot.system_prompt, **self.bot.ai_config
         )

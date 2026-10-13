@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from cachetools import TTLCache
 from loguru import logger
 
-from ...shared.constants import (
+from ...shared.consts import (
     STREAM_DEDUP_CACHE_MAX,
     STREAM_DEDUP_CACHE_TTL,
     STREAM_QUEUE_MAX,
@@ -18,9 +18,7 @@ from ...shared.logs import maybe_log_event_dump
 from .channels import CHAT_CHANNELS, NOTE_CHANNELS, ChannelType
 
 if TYPE_CHECKING:
-    from .streaming import StreamingClient
-
-__all__ = ("EventHandler", "EventRouter")
+    from .stream import StreamingClient
 
 EventHandler = Callable[[dict[str, Any]], Awaitable[Any] | Any]
 

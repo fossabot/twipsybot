@@ -9,11 +9,8 @@ from urllib.parse import urlencode, urlsplit, urlunsplit
 import aiohttp
 from loguru import logger
 
-from ...shared.constants import STREAM_SEND_BUFFER_MAX
-from ...shared.exceptions import WebSocketConnectionError, WebSocketReconnectError
-from .transport import TCPClient
-
-__all__ = ("StreamingSocket",)
+from ...shared.consts import API_TIMEOUT, STREAM_SEND_BUFFER_MAX, USER_AGENT
+from ...shared.errors import WebSocketConnectionError, WebSocketReconnectError
 
 _I_PARAM_RE = re.compile(r"([?&]i=)[^&#\s]+")
 _I_JSON_RE = re.compile(r'("i"\s*:\s*")[^"]+(")')
@@ -27,6 +24,51 @@ _CLOSED_TYPES = (
 
 def _redact_access_token(text: str) -> str:
     return _I_JSON_RE.sub(r"\1***\2", _I_PARAM_RE.sub(r"\1***", text))
+
+
+class TCPClient:
+    def __init__(self) -> None:
+        self.__session: aiohttp.ClientSession | None = None
+        self.__connector: aiohttp.TCPConnector | None = None
+
+    @property
+    def _connector(self) -> aiohttp.TCPConnector:
+        if self.__connector is None or self.__connector.closed:
+            self.__connector = aiohttp.TCPConnector()
+        return self.__connector
+
+    @property
+    def session(self) -> aiohttp.ClientSession:
+        if self.__session is None or self.__session.closed:
+            self.__session = aiohttp.ClientSession(
+                headers={"User-Agent": USER_AGENT},
+                timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
+                connector=self._connector,
+                connector_owner=True,
+            )
+        return self.__session
+
+    async def close_session(self, *, silent: bool = False) -> None:
+        if self.__session and not self.__session.closed:
+            try:
+                await self.__session.close()
+            except Exception as e:
+                logger.warning(f"Error closing session: {e}")
+        if self.__connector and not self.__connector.closed:
+            try:
+                await self.__connector.close()
+            except Exception as e:
+                logger.warning(f"Error closing connector: {e}")
+        self.__session = self.__connector = None
+        if not silent:
+            logger.debug("TCP session closed")
+
+    async def ws_connect(self, url: str) -> aiohttp.ClientWebSocketResponse:
+        try:
+            return await self.session.ws_connect(url)
+        except aiohttp.ClientConnectorError as e:
+            logger.error(f"TCP client connection failed: {e}")
+            raise WebSocketConnectionError() from e
 
 
 class StreamingSocket:

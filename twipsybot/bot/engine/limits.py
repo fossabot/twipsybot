@@ -7,8 +7,8 @@ from cachetools import TTLCache
 
 from ...db.sqlite import DBManager
 from ...shared.config import Config
-from ...shared.config_keys import ConfigKeys
-from ...shared.constants import RESPONSE_LIMIT_CACHE_MAX, RESPONSE_LIMIT_CACHE_TTL
+from ...shared.consts import RESPONSE_LIMIT_CACHE_MAX, RESPONSE_LIMIT_CACHE_TTL
+from ...shared.keys import ConfigKeys
 from ...shared.utils import normalize_tokens
 
 

@@ -21,6 +21,7 @@ from openai import APIStatusError
 from twipsybot import Neuro
 from twipsybot.app import main as app_main
 from twipsybot.clients.misskey.api import MisskeyAPI
+from twipsybot.clients.misskey.bridge import _redact_access_token
 from twipsybot.clients.misskey.channels import ChannelType
 from twipsybot.clients.misskey.events import _normalize
 from twipsybot.clients.misskey.payloads import (
@@ -28,8 +29,7 @@ from twipsybot.clients.misskey.payloads import (
     extract_note_text,
     extract_user_id,
 )
-from twipsybot.clients.misskey.socket import _redact_access_token
-from twipsybot.clients.misskey.streaming import StreamingClient
+from twipsybot.clients.misskey.stream import StreamingClient
 from twipsybot.clients.openai.api import OpenAIAPI
 from twipsybot.clients.openai.extract import (
     extract_responses_text,
@@ -39,8 +39,8 @@ from twipsybot.clients.openai.requests import (
     make_chat_completions_request,
     make_responses_request,
 )
-from twipsybot.shared.constants import API_MAX_RETRIES
-from twipsybot.shared.exceptions import (
+from twipsybot.shared.consts import API_MAX_RETRIES
+from twipsybot.shared.errors import (
     APIBadRequestError,
     APIConnectionError,
     APIPermissionError,
@@ -456,7 +456,7 @@ async def test_streaming_reconnect_backoff_caps_and_resets(
     monkeypatch.setattr(client, "_listen_messages", listen)
     monkeypatch.setattr(client, "_reconnect_with_backoff", reconnect)
     monkeypatch.setattr(
-        "twipsybot.clients.misskey.streaming.random.uniform",
+        "twipsybot.clients.misskey.stream.random.uniform",
         lambda lower, upper: upper,
     )
 
@@ -488,7 +488,7 @@ async def test_streaming_reconnect_uses_jitter(
     reconnect = AsyncMock()
     monkeypatch.setattr(client, "_reconnect_with_backoff", reconnect)
     jitter = Mock(return_value=0.75)
-    monkeypatch.setattr("twipsybot.clients.misskey.streaming.random.uniform", jitter)
+    monkeypatch.setattr("twipsybot.clients.misskey.stream.random.uniform", jitter)
 
     await client.connect()
 
@@ -690,7 +690,7 @@ async def test_streaming_reconnect_runs_resubscribe_flow(
     reconnect = AsyncMock()
     monkeypatch.setattr(client.socket, "close", close)
     monkeypatch.setattr(client, "_connect_and_resubscribe", reconnect)
-    monkeypatch.setattr("twipsybot.clients.misskey.streaming.asyncio.sleep", sleep)
+    monkeypatch.setattr("twipsybot.clients.misskey.stream.asyncio.sleep", sleep)
 
     await client._reconnect_with_backoff(4.0)
 
@@ -910,7 +910,7 @@ async def test_streaming_warns_once_per_send_buffer_overflow(
 ) -> None:
     client = StreamingClient("https://example.com", "token")
     warning = Mock()
-    monkeypatch.setattr("twipsybot.clients.misskey.socket.logger.warning", warning)
+    monkeypatch.setattr("twipsybot.clients.misskey.bridge.logger.warning", warning)
     maxlen = client.socket.buffer.maxlen
     assert maxlen is not None
 

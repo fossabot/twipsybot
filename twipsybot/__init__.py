@@ -6,8 +6,6 @@ _EXPORTS: dict[str, tuple[str, str]] = {
     "Config": (".shared.config", "Config"),
 }
 
-__all__ = list(_EXPORTS)
-
 
 def __getattr__(name: str) -> Any:
     try:

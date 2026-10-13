@@ -8,13 +8,13 @@ from urllib.parse import urlsplit
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING
 
 from ..bot.flows.post import JOB_ID as AUTO_POST_JOB_ID
-from ..shared.config_keys import ConfigKeys
-from ..shared.exceptions import (
+from ..shared.errors import (
     APIBadRequestError,
     APIConnectionError,
     APINotFoundError,
     APIRateLimitError,
 )
+from ..shared.keys import ConfigKeys
 from ..shared.utils import normalize_tokens
 
 if TYPE_CHECKING:

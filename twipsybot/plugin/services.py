@@ -4,7 +4,7 @@ from typing import Any
 
 from yarl import URL
 
-from ..shared.config_keys import ConfigKeys
+from ..shared.keys import ConfigKeys
 from ..shared.locks import KeyedAsyncLock, actor_key
 
 
@@ -193,3 +193,6 @@ class BotControlAdapter:
 
     async def resolve_antenna_ids(self, selectors: Sequence[str]) -> list[str]:
         return await self._bot.connect.resolve_antenna_ids(list(selectors))
+
+    async def generate_auto_post(self, plugin_prompt: str = "") -> str:
+        return await self._bot.auto_post.generate(plugin_prompt)

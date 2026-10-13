@@ -7,15 +7,12 @@ import aiohttp
 from aiohttp.abc import AbstractResolver, ResolveResult
 from yarl import URL
 
-from ...shared.constants import API_TIMEOUT
-from ...shared.exceptions import BlockedURLError
-
-__all__ = ("PublicFetcher",)
+from ...shared.consts import API_TIMEOUT, USER_AGENT
+from ...shared.errors import BlockedURLError
 
 _IPAddress = ipaddress.IPv4Address | ipaddress.IPv6Address
 _IPNetwork = ipaddress.IPv4Network | ipaddress.IPv6Network
 
-_USER_AGENT = "Mozilla/5.0 (compatible; TwipsyBot)"
 _REDIRECTS = frozenset({301, 302, 303, 307, 308})
 _MAX_REDIRECTS = 3
 _CHUNK_SIZE = 65536
@@ -82,7 +79,7 @@ class PublicFetcher:
         if self._session is None or self._session.closed:
             self._resolver = _Resolver(self)
             self._session = aiohttp.ClientSession(
-                headers={"User-Agent": _USER_AGENT},
+                headers={"User-Agent": USER_AGENT},
                 timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
                 connector=aiohttp.TCPConnector(resolver=self._resolver),
                 cookie_jar=aiohttp.DummyCookieJar(),

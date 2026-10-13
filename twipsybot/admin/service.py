@@ -14,7 +14,7 @@ from ..clients.misskey.payloads import (
     extract_user_id,
     extract_username,
 )
-from ..shared.config_keys import ConfigKeys
+from ..shared.keys import ConfigKeys
 from ..shared.utils import normalize_tokens
 from . import handlers
 

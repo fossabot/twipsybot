@@ -11,14 +11,14 @@ from loguru import logger
 
 from ..bot.engine.core import Neuro
 from ..shared.config import Config
-from ..shared.config_keys import ConfigKeys
-from ..shared.exceptions import (
+from ..shared.errors import (
     APIConnectionError,
     APIPermissionError,
     AuthenticationError,
     ConfigurationError,
     WebSocketConnectionError,
 )
+from ..shared.keys import ConfigKeys
 from ..shared.logs import set_log_level, setup_logging
 from .banner import BANNER
 

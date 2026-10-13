@@ -10,7 +10,7 @@ from ...clients.misskey.payloads import (
     extract_username,
     normalize_payload,
 )
-from ...shared.config_keys import ConfigKeys
+from ...shared.keys import ConfigKeys
 from ...shared.logs import format_log_text, maybe_log_event_dump
 from ..engine.pipeline import Augment, Reply, Source, replied
 

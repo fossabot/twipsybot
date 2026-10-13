@@ -1,5 +1,7 @@
-from ..shared.exceptions import APIResponseError, BlockedURLError
-from .base import PLUGIN_API_VERSION, LineText, PluginBase, PluginConfig, When
+from ..shared.consts import USER_AGENT
+from ..shared.errors import APIResponseError, BlockedURLError
+from ..shared.settings import When
+from .base import PLUGIN_API_VERSION, LineText, PluginBase, PluginConfig
 from .contracts import (
     BotControl,
     DriveService,
@@ -26,6 +28,7 @@ from .events import (
 
 __all__ = (
     "PLUGIN_API_VERSION",
+    "USER_AGENT",
     "APIResponseError",
     "AutoPostEvent",
     "AutoPostItem",

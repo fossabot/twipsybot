@@ -3,8 +3,6 @@ from collections.abc import Coroutine
 from datetime import UTC, datetime
 from typing import Any
 
-__all__ = ("BotRuntime",)
-
 
 class BotRuntime:
     def __init__(self):

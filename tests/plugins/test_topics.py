@@ -16,14 +16,12 @@ from twipsybot.plugin import AutoPostEvent
 
 @pytest.mark.parametrize("prefix", ("", "  "))
 async def test_topics_blank_prompts_use_defaults(prefix: str) -> None:
-    generate_text = AsyncMock(return_value="rewritten")
-    openai = SimpleNamespace(
-        generate_text=generate_text, system_prompt="", max_tokens=1, temperature=0
-    )
+    generate_auto_post = AsyncMock(return_value="rewritten")
+    bot = SimpleNamespace(generate_auto_post=generate_auto_post)
     plugin = TopicsPlugin(
         plugin_context(
             {"enabled": True, "list_ai_prefix": prefix, "rss_ai_prefix": prefix},
-            openai=openai,
+            bot=bot,
         )
     )
     plugin._get_next_topic = AsyncMock(return_value="science")
@@ -32,9 +30,8 @@ async def test_topics_blank_prompts_use_defaults(prefix: str) -> None:
     await plugin._rewrite_rss_title_with_ai("t", "l", summary="s")
 
     assert result == {"prompt": _LIST_AI_PREFIX.format(topic="science")}
-    assert generate_text.await_args is not None
-    assert generate_text.await_args.args[0] == _RSS_AI_PREFIX.format(
-        summary="s", title="t", link="l"
+    generate_auto_post.assert_awaited_once_with(
+        _RSS_AI_PREFIX.format(summary="s", title="t", link="l")
     )
 
 
@@ -49,14 +46,8 @@ def test_topics_rss_list_accepts_lines_with_comments() -> None:
     assert plugin.settings.rss_post_mode == "rotate"
 
 
-async def test_topics_rss_ai_uses_public_openai_service() -> None:
-    generate_text = AsyncMock(return_value="rewritten title\nignored")
-    openai = SimpleNamespace(
-        generate_text=generate_text,
-        system_prompt="system",
-        max_tokens=100,
-        temperature=0.5,
-    )
+async def test_topics_rss_ai_uses_bot_auto_post_generation() -> None:
+    generate_auto_post = AsyncMock(return_value="rewritten title\nsecond line")
     plugin = TopicsPlugin(
         plugin_context(
             {
@@ -65,7 +56,7 @@ async def test_topics_rss_ai_uses_public_openai_service() -> None:
                 "rss_ai": True,
                 "rss_ai_prefix": "{title}",
             },
-            openai=openai,
+            bot=SimpleNamespace(generate_auto_post=generate_auto_post),
         )
     )
 
@@ -73,13 +64,8 @@ async def test_topics_rss_ai_uses_public_openai_service() -> None:
         "original", "https://example.com", summary="summary"
     )
 
-    assert result == "rewritten title"
-    generate_text.assert_awaited_once_with(
-        "original",
-        "system",
-        max_tokens=100,
-        temperature=0.5,
-    )
+    assert result == "rewritten title\nsecond line"
+    generate_auto_post.assert_awaited_once_with("original")
 
 
 @pytest.mark.parametrize("topic", ("science", "https://example.com/article"))

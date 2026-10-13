@@ -6,14 +6,6 @@ from typing import Any
 
 from loguru import logger
 
-__all__ = (
-    "LOG_LINE",
-    "format_log_text",
-    "maybe_log_event_dump",
-    "set_log_level",
-    "setup_logging",
-)
-
 _FORMAT = "{time:YYYY-MM-DD HH:mm:ss.SSS} | <level>{level: <8}</level> | <level>{message}</level>"
 LOG_LINE = re.compile(r"(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3}) \| (\w+)\s* \| ")
 _threshold = [logger.level("INFO").no]

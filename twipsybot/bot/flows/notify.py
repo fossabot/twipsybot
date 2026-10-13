@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 
-from ...shared.config_keys import ConfigKeys
+from ...shared.keys import ConfigKeys
 from ...shared.logs import maybe_log_event_dump
 
 if TYPE_CHECKING:

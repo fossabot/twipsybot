@@ -24,14 +24,14 @@ from twipsybot.app import main as app_main
 from twipsybot.bot.engine.pipeline import Reply
 from twipsybot.bot.flows.image import ImageGenerationService
 from twipsybot.bot.flows.post import AutoPostService
-from twipsybot.shared.config_keys import ConfigKeys
-from twipsybot.shared.exceptions import (
+from twipsybot.shared.errors import (
     APIBadRequestError,
     APIConnectionError,
     APINotFoundError,
     APIPermissionError,
     APIRateLimitError,
 )
+from twipsybot.shared.keys import ConfigKeys
 from twipsybot.shared.settings import read_settings, write_settings
 
 

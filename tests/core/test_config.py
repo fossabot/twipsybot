@@ -8,8 +8,8 @@ from conftest import WriteConfig
 
 from twipsybot import Neuro
 from twipsybot.shared.config import Config, Settings, needs_restart
-from twipsybot.shared.config_keys import ConfigKeys
-from twipsybot.shared.exceptions import ConfigurationError
+from twipsybot.shared.errors import ConfigurationError
+from twipsybot.shared.keys import ConfigKeys
 from twipsybot.shared.settings import (
     patch_settings,
     prune,

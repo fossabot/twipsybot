@@ -5,13 +5,10 @@ from typing import Any
 
 from loguru import logger
 
-from ...shared.exceptions import WebSocketConnectionError, WebSocketReconnectError
+from ...shared.errors import WebSocketConnectionError, WebSocketReconnectError
+from .bridge import StreamingSocket, TCPClient
 from .channels import ChannelSpec, ChannelType
 from .events import EventRouter
-from .socket import StreamingSocket
-from .transport import TCPClient
-
-__all__ = ("StreamingClient",)
 
 MAX_CHANNELS_PER_CONNECTION = 32
 CHANNEL_CONNECT_TIMEOUT = 5.0

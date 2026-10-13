@@ -15,13 +15,13 @@ from openai import (
     AuthenticationError as OpenAIAuthenticationError,
 )
 
-from ...shared.constants import (
+from ...shared.consts import (
     API_MAX_RETRIES,
     API_TIMEOUT,
     OPENAI_MAX_CONCURRENCY,
     REQUEST_TIMEOUT,
 )
-from ...shared.exceptions import APIConnectionError, AuthenticationError
+from ...shared.errors import APIConnectionError, AuthenticationError
 from .extract import (
     extract_responses_text,
     process_chat_completions_response,
@@ -31,8 +31,6 @@ from .requests import (
     make_chat_completions_request,
     make_responses_request,
 )
-
-__all__ = ("OpenAIAPI",)
 
 _MODERATION_BATCH = 100
 

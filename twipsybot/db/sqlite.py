@@ -7,9 +7,7 @@ import aiosqlite
 from loguru import logger
 
 from ..shared.config import Config
-from ..shared.config_keys import ConfigKeys
-
-__all__ = ("DBManager",)
+from ..shared.keys import ConfigKeys
 
 Row = Sequence[Any]
 

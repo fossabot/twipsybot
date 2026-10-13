@@ -6,16 +6,6 @@ from typing import Any, Protocol
 import aiohttp
 from yarl import URL
 
-__all__ = (
-    "BotControl",
-    "DriveService",
-    "HttpService",
-    "MisskeyService",
-    "OpenAIService",
-    "PluginContext",
-    "PluginStorage",
-)
-
 
 class HttpService(Protocol):
     def open(
@@ -150,6 +140,8 @@ class BotControl(Protocol):
     def load_antenna_selectors(self) -> list[str]: ...
 
     async def resolve_antenna_ids(self, selectors: Sequence[str]) -> list[str]: ...
+
+    async def generate_auto_post(self, plugin_prompt: str = "") -> str: ...
 
 
 @dataclass(frozen=True, slots=True)

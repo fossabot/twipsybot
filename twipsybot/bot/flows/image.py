@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from ...shared.constants import FETCH_MAX_BYTES
+from ...shared.consts import FETCH_MAX_BYTES
 from ..engine.pipeline import Reply
 
 if TYPE_CHECKING:

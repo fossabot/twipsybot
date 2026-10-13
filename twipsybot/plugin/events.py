@@ -11,22 +11,6 @@ from ..clients.misskey.payloads import (
     normalize_payload,
 )
 
-__all__ = (
-    "AutoPostEvent",
-    "AutoPostItem",
-    "AutoPostResult",
-    "AutoPostVisibility",
-    "ContextResult",
-    "FileRef",
-    "HandledResult",
-    "MentionEvent",
-    "MessageEvent",
-    "NotificationEvent",
-    "PromptModificationResult",
-    "TimelineNoteEvent",
-    "UserRef",
-)
-
 AutoPostVisibility = Literal["public", "home", "followers"]
 
 
@@ -48,7 +32,6 @@ class AutoPostResult(TypedDict):
 
 class PromptModificationResult(TypedDict):
     prompt: str
-    timestamp: NotRequired[int]
 
 
 class ContextResult(TypedDict, total=False):

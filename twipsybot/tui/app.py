@@ -29,13 +29,11 @@ from textual.widgets.option_list import Option
 
 from ..plugin.manager import discover_plugin_classes
 from ..shared.config import SECRETS, Config
-from ..shared.exceptions import ConfigurationError
+from ..shared.errors import ConfigurationError
 from ..shared.settings import get_dotted, read_settings, set_dotted, write_settings
 from .logs import LogsPage
 from .schema import Section, Spec, build_sections, overlay, to_widget
 from .times import TimesField
-
-__all__ = ("ConfigApp", "run")
 
 _BLURBS = {
     "connect": "instance · api",

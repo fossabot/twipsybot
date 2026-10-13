@@ -1,20 +1,3 @@
-__all__ = (
-    "APIBadRequestError",
-    "APIConnectionError",
-    "APIFileTooLargeError",
-    "APINotFoundError",
-    "APIPermissionError",
-    "APIRateLimitError",
-    "APIResponseError",
-    "AuthenticationError",
-    "BlockedURLError",
-    "ConfigurationError",
-    "TwipsyBotError",
-    "WebSocketConnectionError",
-    "WebSocketReconnectError",
-)
-
-
 class TwipsyBotError(Exception):
     pass
 

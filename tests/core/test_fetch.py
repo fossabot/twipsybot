@@ -9,7 +9,7 @@ from aiohttp.test_utils import TestServer
 
 from twipsybot.clients.fetch.public import PublicFetcher
 from twipsybot.clients.misskey.api import MisskeyAPI
-from twipsybot.shared.exceptions import APINotFoundError, BlockedURLError
+from twipsybot.shared.errors import APINotFoundError, BlockedURLError
 
 _LOOPBACK = ("127.0.0.0/8", "::1/128")
 

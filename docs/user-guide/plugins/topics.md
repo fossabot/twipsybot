@@ -1,6 +1,6 @@
 ---
 title: Topics 主题与 RSS 发帖
-description: 使用 Topics 从 TXT 主题或 RSS 订阅为 TwipsyBot 自动发帖提供内容。
+description: 使用 Topics 从主题列表或 RSS 订阅为 TwipsyBot 自动发帖提供内容。
 ---
 
 # Topics：主题与 RSS 发帖
@@ -41,7 +41,7 @@ plugins:
 
 - `rss_list` 每行一个地址。
 - `rss_post_mode`：`rotate`（默认）每轮从一个源发一条并轮换；`batch` 每轮从每个源各发一条最新未发布内容。
-- `rss_ai: false` 发布摘要或标题加链接；开启后由模型基于摘要、标题与链接改写，仍附链接。`rss_ai_prefix` 留空使用内置提示，支持 `{summary}`、`{title}`、`{link}`。
+- `rss_ai: false` （默认）直接发布摘要或标题；开启后由模型总结内容。提示词为 `rss_ai_prefix` 加 `autopost.prompt`，`rss_ai_prefix` 留空使用内置前缀，支持 `{summary}`、`{title}`、`{link}`。无论开关都附带原文链接。
 - 条目需含标题与链接；发布成功后才记录标识，避免重复。
 - 请求总超时 60 秒，每个源检查前 20 条。
 
@@ -49,4 +49,4 @@ plugins:
 
 - 多源优先 `rotate`，节奏更平缓；`batch` 每篇计入 `daily_max`，耗尽后本轮剩余不发。
 - 确认来源可靠并遵守转载规范。
-- 调整 TXT 进度或清理 RSS 历史前先备份数据库。
+- 调整 List 进度或清理 RSS 历史前先备份数据库。
