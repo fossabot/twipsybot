@@ -22,6 +22,7 @@ class Reply:
 class Augment:
     context: str = ""
     text: str | None = None
+    media: tuple[dict[str, Any], ...] = ()
 
     def rewrite(self, prompt: str, original: str) -> str:
         if self.text is None or not original:
@@ -34,6 +35,13 @@ class Augment:
 
     def apply(self, prompt: str, original: str) -> str:
         return self.wrap(self.rewrite(prompt, original))
+
+    def content(self, prompt: str) -> str | list[dict[str, Any]]:
+        prompt = prompt.strip()
+        if not self.media:
+            return prompt
+        text = [{"type": "input_text", "text": prompt}] if prompt else []
+        return [*text, *self.media]
 
 
 Source = Literal["admin", "command", "limit", "plugin", "ai"]
@@ -62,6 +70,7 @@ class ResponsePipeline:
         return Augment(
             "\n\n".join(r["context"] for _, r in results if "context" in r),
             next((r["text"] for _, r in results if "text" in r), None),
+            tuple(m for _, r in results for m in r.get("media", ())),
         )
 
     async def respond(

@@ -92,7 +92,7 @@ export default withMermaid(
               { text: "KeyAct", link: "/user-guide/plugins/keyact" },
               { text: "Radar", link: "/user-guide/plugins/radar" },
               { text: "Topics", link: "/user-guide/plugins/topics" },
-              { text: "Vision", link: "/user-guide/plugins/vision" },
+              { text: "Media", link: "/user-guide/plugins/media" },
               { text: "Web", link: "/user-guide/plugins/web" },
             ],
           },

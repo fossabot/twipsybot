@@ -37,6 +37,7 @@ class PromptModificationResult(TypedDict):
 class ContextResult(TypedDict, total=False):
     context: str
     text: str
+    media: Sequence[Mapping[str, Any]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +61,16 @@ class FileRef:
 
 
 @dataclass(frozen=True, slots=True)
+class NoteRef:
+    id: str
+    text: str
+    cw: str | None
+    user: UserRef
+    files: tuple[FileRef, ...]
+    raw: Mapping[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
 class MessageEvent:
     id: str
     text: str
@@ -77,6 +88,15 @@ class MentionEvent:
     user: UserRef
     files: tuple[FileRef, ...]
     raw: Mapping[str, Any]
+    reply_id: str | None = None
+    renote_id: str | None = None
+    reply: NoteRef | None = None
+    renote: NoteRef | None = None
+
+    @property
+    def attachments(self) -> tuple[FileRef, ...]:
+        refs = (self, self.renote, self.reply)
+        return tuple({f.id: f for ref in refs if ref for f in ref.files}.values())
 
 
 @dataclass(frozen=True, slots=True)
@@ -148,6 +168,19 @@ def _files(payload: Mapping[str, Any], *, chat: bool = False) -> tuple[FileRef, 
     return tuple(unique.values())
 
 
+def _note_ref(value: Any) -> NoteRef | None:
+    if not isinstance(value, dict) or not (note_id := _string(value.get("id"))):
+        return None
+    return NoteRef(
+        id=note_id,
+        text=extract_note_text(value, include_cw=False),
+        cw=_string(value.get("cw")),
+        user=_user(value),
+        files=_files(value),
+        raw=MappingProxyType(value),
+    )
+
+
 def _message_event(raw: dict[str, Any]) -> MessageEvent:
     if not (event_id := _string(raw.get("id"))):
         raise ValueError("message event requires id")
@@ -176,6 +209,10 @@ def _mention_event(raw: dict[str, Any]) -> MentionEvent:
         user=_user(note),
         files=_files(note),
         raw=MappingProxyType(note),
+        reply_id=_string(note.get("replyId")),
+        renote_id=_string(note.get("renoteId")),
+        reply=_note_ref(note.get("reply")),
+        renote=_note_ref(note.get("renote")),
     )
 
 

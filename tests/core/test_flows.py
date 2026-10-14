@@ -15,6 +15,7 @@ from conftest import (
     WriteConfig,
 )
 
+from twipsybot.bot.engine.pipeline import Augment
 from twipsybot.bot.flows.post import AutoPostService
 from twipsybot.shared.errors import APIBadRequestError
 from twipsybot.shared.keys import ConfigKeys
@@ -266,7 +267,7 @@ async def test_mention_context_hook_augments_prompt(
     assert openai_server.calls[0]["messages"][-1]["content"] == "CTX\n\n@testbot 你好"
 
 
-async def test_image_only_chat_is_handled_by_vision_plugin(
+async def test_image_only_chat_is_handled_by_media_plugin(
     make_bot: MakeBot,
     make_plugin_dir: MakePluginDir,
     write_config: WriteConfig,
@@ -274,11 +275,11 @@ async def test_image_only_chat_is_handled_by_vision_plugin(
     openai_server: FakeOpenAIServer,
 ) -> None:
     plugins_dir = make_plugin_dir(
-        "vision_test",
-        "from plugins.vision.plugin import VisionPlugin as BaseVisionPlugin\n\n\n"
-        "class VisionPlugin(BaseVisionPlugin):\n"
+        "media_test",
+        "from plugins.media.plugin import MediaPlugin as BaseMediaPlugin\n\n\n"
+        "class MediaPlugin(BaseMediaPlugin):\n"
         "    pass\n\n"
-        "plugin = VisionPlugin\n",
+        "plugin = MediaPlugin\n",
         config=(
             "enabled: true\n"
             "use_thumbnail: false\n"
@@ -308,6 +309,190 @@ async def test_image_only_chat_is_handled_by_vision_plugin(
     assert user_content[1]["image_url"]["url"].startswith("data:image/png;base64,")
     reply = misskey_server.calls["chat/messages/create-to-user"][0]
     assert reply["text"] == DEFAULT_AI_REPLY
+
+
+async def test_mention_with_replied_image_is_handled_by_media_plugin(
+    make_bot: MakeBot,
+    make_plugin_dir: MakePluginDir,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+    openai_server: FakeOpenAIServer,
+) -> None:
+    plugins_dir = make_plugin_dir(
+        "media_test",
+        "from plugins.media.plugin import MediaPlugin as BaseMediaPlugin\n\n\n"
+        "class MediaPlugin(BaseMediaPlugin):\n"
+        "    pass\n\n"
+        "plugin = MediaPlugin\n",
+        config="enabled: true\nuse_thumbnail: false\n",
+    )
+    bot = await make_bot(write_config(), plugins_dir=plugins_dir)
+    bot.misskey.drive.fetch_bytes = AsyncMock(return_value=b"image")
+    note = {
+        **_MENTION_NOTE,
+        "text": "@testbot 这是什么",
+        "replyId": "note-0",
+        "reply": {
+            "id": "note-0",
+            "text": "看这张图",
+            "user": {"id": "user-2", "username": "bob"},
+            "files": [
+                {
+                    "id": "file-1",
+                    "type": "image/png",
+                    "url": "https://example.com/image.png",
+                }
+            ],
+        },
+    }
+
+    await bot.mention.handle(note)
+
+    bot.misskey.drive.fetch_bytes.assert_awaited_once()
+    user_content = openai_server.calls[0]["messages"][-1]["content"]
+    assert user_content[0] == {
+        "type": "text",
+        "text": "@testbot 这是什么\n\nReplying to:\n看这张图",
+    }
+    assert user_content[1]["type"] == "image_url"
+    assert misskey_server.calls["notes/create"][0]["replyId"] == "note-mention-1"
+
+
+def _thread_note(
+    note_id: str, user_id: str, username: str, text: str
+) -> dict[str, Any]:
+    return {
+        "id": note_id,
+        "text": text,
+        "user": {"id": user_id, "username": username},
+    }
+
+
+def _thread_chain() -> list[dict[str, Any]]:
+    return [
+        _thread_note("b1", "bot-id", "testbot", "bot reply"),
+        _thread_note("c1", "user-3", "carol", "noise"),
+        _thread_note("u1", "user-1", "alice", "@testbot 问题"),
+        _thread_note("p1", "user-2", "bob", "主帖"),
+    ]
+
+
+def _reply_event() -> dict[str, Any]:
+    return {
+        "type": "reply",
+        "note": {
+            **_thread_note("u2", "user-1", "alice", "继续"),
+            "replyId": "b1",
+            "reply": _thread_note("b1", "bot-id", "testbot", "bot reply"),
+        },
+    }
+
+
+async def test_reply_uses_conversation_with_root_and_participants_only(
+    make_bot: MakeBot,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+    openai_server: FakeOpenAIServer,
+) -> None:
+    misskey_server.set_response("notes/conversation", lambda payload: _thread_chain())
+    bot = await make_bot(write_config())
+
+    await bot.mention.handle(_reply_event())
+
+    assert misskey_server.calls["notes/conversation"] == [{"noteId": "u2", "limit": 10}]
+    messages = [m for m in openai_server.calls[0]["messages"] if m["role"] != "system"]
+    assert messages == [
+        {"role": "user", "content": "@bob: 主帖"},
+        {"role": "user", "content": "@testbot 问题"},
+        {"role": "assistant", "content": "bot reply"},
+        {"role": "user", "content": "继续"},
+    ]
+
+
+async def test_conversation_request_uses_memory_as_limit(
+    make_bot: MakeBot,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+    openai_server: FakeOpenAIServer,
+) -> None:
+    misskey_server.set_response("notes/conversation", lambda payload: _thread_chain())
+    bot = await make_bot(write_config(reply={"memory": 3}))
+
+    await bot.mention.handle(_reply_event())
+
+    assert misskey_server.calls["notes/conversation"][0]["limit"] == 3
+
+
+async def test_conversation_is_skipped_when_memory_is_disabled(
+    make_bot: MakeBot,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+    openai_server: FakeOpenAIServer,
+) -> None:
+    bot = await make_bot(write_config(reply={"memory": 0}))
+
+    await bot.mention.handle(_reply_event())
+
+    assert "notes/conversation" not in misskey_server.calls
+    content = openai_server.calls[0]["messages"][-1]["content"]
+    assert content == "bot reply\n\n继续"
+
+
+async def test_conversation_skips_hidden_notes_and_handles_single_parent(
+    make_bot: MakeBot,
+    write_config: WriteConfig,
+    misskey_server: FakeMisskeyServer,
+    openai_server: FakeOpenAIServer,
+) -> None:
+    hidden = {**_thread_note("b1", "bot-id", "testbot", ""), "isHidden": True}
+    chains = iter(
+        [
+            [hidden, _thread_note("p1", "user-2", "bob", "主帖")],
+            [_thread_note("p1", "user-2", "bob", "主帖")],
+        ]
+    )
+    misskey_server.set_response("notes/conversation", lambda payload: next(chains))
+    bot = await make_bot(write_config())
+
+    await bot.mention.handle(_reply_event())
+    await bot.mention.handle(_reply_event())
+
+    for call in openai_server.calls:
+        messages = [m for m in call["messages"] if m["role"] != "system"]
+        assert messages == [
+            {"role": "user", "content": "@bob: 主帖"},
+            {"role": "user", "content": "继续"},
+        ]
+
+
+async def test_conversation_failure_falls_back_to_parent_prompt(
+    make_bot: MakeBot,
+    write_config: WriteConfig,
+    openai_server: FakeOpenAIServer,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bot = await make_bot(write_config())
+    monkeypatch.setattr(
+        bot.misskey,
+        "get_note_conversation",
+        AsyncMock(side_effect=APIBadRequestError("NO_SUCH_NOTE")),
+    )
+
+    await bot.mention.handle(_reply_event())
+
+    content = openai_server.calls[0]["messages"][-1]["content"]
+    assert content == "bot reply\n\n继续"
+
+
+def test_augment_content_builds_multimodal_input() -> None:
+    part = {"type": "input_image", "image_url": "u"}
+
+    assert Augment().content(" hi ") == "hi"
+    assert Augment(media=(part,)).content("hi") == [
+        {"type": "input_text", "text": "hi"},
+        part,
+    ]
+    assert Augment(media=(part,)).content(" ") == [part]
 
 
 async def test_admin_command_takes_priority_over_plugins(

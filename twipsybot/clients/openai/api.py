@@ -148,6 +148,17 @@ class OpenAIAPI:
                             "image_url": {"url": part.get("image_url", "")},
                         }
                     )
+                elif part.get("type") == "input_file":
+                    parts.append(
+                        {
+                            "type": "file",
+                            "file": {
+                                key: part[key]
+                                for key in ("filename", "file_data")
+                                if key in part
+                            },
+                        }
+                    )
                 else:
                     parts.append(part)
             converted.append({**message, "content": parts})

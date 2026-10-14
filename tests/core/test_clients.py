@@ -1044,6 +1044,40 @@ async def test_streaming_startup_failure_closes_initialized_services(
     bot.db.close.assert_awaited_once()
 
 
+def test_responses_file_part_converts_for_chat_completions() -> None:
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "hi"},
+                {
+                    "type": "input_file",
+                    "filename": "a.pdf",
+                    "file_data": "data:application/pdf;base64,AA==",
+                },
+                {
+                    "type": "input_audio",
+                    "input_audio": {"data": "AA==", "format": "mp3"},
+                },
+            ],
+        }
+    ]
+
+    converted = OpenAIAPI._to_chat_completions_messages(messages)
+
+    assert converted[0]["content"] == [
+        {"type": "text", "text": "hi"},
+        {
+            "type": "file",
+            "file": {
+                "filename": "a.pdf",
+                "file_data": "data:application/pdf;base64,AA==",
+            },
+        },
+        {"type": "input_audio", "input_audio": {"data": "AA==", "format": "mp3"}},
+    ]
+
+
 def test_responses_unavailable_rejects_parameter_error() -> None:
     assert not OpenAIAPI._is_responses_unavailable(
         _BadRequest("Invalid max_output_tokens")

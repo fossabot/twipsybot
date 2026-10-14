@@ -165,7 +165,10 @@ class WebPlugin(PluginBase):
     ) -> ContextResult | None:
         manual = _COMMAND.match(event.text)
         head, rest = (manual["head"], manual["rest"]) if manual else ("", event.text)
-        urls = _urls(rest)
+        related = (event.renote, event.reply) if isinstance(event, MentionEvent) else ()
+        urls = _urls(
+            "\n".join([rest, *(p for n in related if n for p in (n.cw, n.text) if p)])
+        )
         query = " ".join(_MENTION.sub(" ", _URL.sub(" ", rest)).split())
         search = bool(query) and (
             manual is not None

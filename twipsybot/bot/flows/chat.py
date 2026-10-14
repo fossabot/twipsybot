@@ -238,7 +238,7 @@ class ChatHandler:
     async def _generate_ai_reply(
         self, ctx: _ChatContext, limit: int, augment: Augment
     ) -> str | None:
-        if not ctx.text:
+        if not ctx.text and not augment.media:
             return None
         user_content = ctx.user_content
         token_budget = self.bot.config.get(ConfigKeys.REPLY_CTX_TOKENS)
@@ -260,12 +260,15 @@ class ChatHandler:
         ):
             history.pop()
         history = self.bot.openai.trim_chat_history(history, token_budget)
-        messages: list[dict[str, str]] = []
+        messages: list[dict[str, Any]] = []
         if self.bot.system_prompt:
             messages.append({"role": "system", "content": self.bot.system_prompt})
         messages.extend(history)
         messages.append(
-            {"role": "user", "content": augment.apply(user_content, ctx.text)}
+            {
+                "role": "user",
+                "content": augment.content(augment.apply(user_content, ctx.text)),
+            }
         )
         return await self.bot.openai.generate_chat(messages, **self.bot.ai_config)
 

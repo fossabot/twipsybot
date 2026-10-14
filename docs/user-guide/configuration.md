@@ -72,7 +72,7 @@ reply:
 | --- | --- |
 | 回复、自动发帖 | `bot.model` |
 | `/img` | `bot.image_model` |
-| Vision | `bot.model` 支持图片输入 |
+| Media | `bot.model` 支持媒体输入 |
 | Iincho（默认后端） | 端点支持 `/moderations` |
 
 ## 提示词文件

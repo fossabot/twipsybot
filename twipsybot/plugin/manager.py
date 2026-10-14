@@ -87,11 +87,22 @@ def _valid_auto_item(item: Any) -> bool:
     )
 
 
+def _valid_media(value: Any) -> bool:
+    return (
+        isinstance(value, list | tuple)
+        and bool(value)
+        and all(isinstance(p, dict) and _non_empty_text(p.get("type")) for p in value)
+    )
+
+
 def _valid_context(result: dict[str, Any]) -> bool:
     return (
         bool(result)
-        and set(result) <= {"context", "text"}
-        and all(_non_empty_text(value) for value in result.values())
+        and set(result) <= {"context", "text", "media"}
+        and all(
+            _valid_media(value) if key == "media" else _non_empty_text(value)
+            for key, value in result.items()
+        )
     )
 
 

@@ -12,7 +12,7 @@ from aiohttp.test_utils import TestServer
 from plugins.web import plugin as web_plugin
 from plugins.web.plugin import WebPlugin
 from twipsybot.clients.fetch.public import PublicFetcher
-from twipsybot.plugin import MessageEvent, UserRef
+from twipsybot.plugin import MentionEvent, MessageEvent, NoteRef, UserRef
 from twipsybot.plugin.services import HttpServiceAdapter
 from twipsybot.shared.errors import BlockedURLError
 
@@ -205,6 +205,34 @@ async def test_web_fetches_links_without_always_on(
     assert f"[1] Doc\n{url}\nHello\nWorld\n" in result["context"]
     assert "evil" not in result["context"]
     assert "menu" not in result["context"]
+
+
+async def test_web_fetches_links_from_replied_and_quoted_notes(
+    make_web: Make,
+) -> None:
+    plugin, server = await make_web(_app(), nets=_LOOPBACK)
+    page, redirect = (str(server.make_url(path)) for path in ("/page", "/redirect"))
+    user = UserRef(id="u1", username="alice", host=None)
+
+    def note(note_id: str, text: str) -> NoteRef:
+        return NoteRef(id=note_id, text=text, cw=None, user=user, files=(), raw={})
+
+    event = MentionEvent(
+        id="m1",
+        text="总结一下",
+        cw=None,
+        user=user,
+        files=(),
+        raw={},
+        reply=note("n1", f"看这个 {page}"),
+        renote=note("n2", f"{redirect} {page}"),
+    )
+
+    result = cast(dict[str, Any] | None, await plugin.on_context(event))
+
+    assert result is not None
+    assert "text" not in result
+    assert result["context"].count("Hello") == 2
 
 
 async def test_web_follows_redirects_and_fetch_top(

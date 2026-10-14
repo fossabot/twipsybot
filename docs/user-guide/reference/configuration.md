@@ -100,11 +100,11 @@ Fake-IP 代理等环境会把域名解析到保留网段，需将其填入 `allo
 | `enabled` | `false` | 启用插件 |
 | `priority` | 插件默认值 | 越大越先执行 |
 
-内置默认优先级：Bond `900` · KeyAct `850` · Vision `750` · Web `500` · Topics `300` · Radar `50` · Iincho `40`。其余字段见各[插件](../plugins/)页面。
+内置默认优先级：Bond `900` · KeyAct `850` · Media `750` · Web `500` · Topics `300` · Radar `50` · Iincho `40`。其余字段见各[插件](../plugins/)页面。
 
 ```yaml
 plugins:
-  vision:
+  media:
     enabled: true
   keyact:
     enabled: true

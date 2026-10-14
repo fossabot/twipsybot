@@ -104,7 +104,8 @@ example = "twipsybot_example:plugin"
 | 类型 | 字段 |
 | --- | --- |
 | `MessageEvent` | `id text user room_id files raw` |
-| `MentionEvent` | `id text cw user files raw` |
+| `MentionEvent` | `id text cw user files raw reply_id renote_id reply renote attachments` |
+| `NoteRef` | `id text cw user files raw` |
 | `NotificationEvent` | `id type user raw` |
 | `TimelineNoteEvent` | `id text cw user channel files raw` |
 | `AutoPostEvent` | `triggered_at` |
@@ -115,24 +116,33 @@ example = "twipsybot_example:plugin"
 - 返回值须严格符合公共 TypedDict，多余字段会使结果失效。
 - 消息、提及与时间线事件的 `id` 始终非空；`NotificationEvent.id`、`UserRef.id`、`cw`、`host`、文件 URL 等可能为空。
 - `UserRef.handle` 为 `username@host`，本地用户为 `username`。`channel` 通常为 `homeTimeline`、`localTimeline`、`hybridTimeline`、`globalTimeline` 或 `antenna`。
+- `MentionEvent.reply` / `renote` 为被回复、被引用帖子（`NoteRef`），仅一层且无嵌套；对方已删除、不可见或服务端未内联时为 `None`，此时仍可从 `reply_id` / `renote_id` 判断关系。`attachments` 按本帖、被引用帖、被回复帖的顺序合并并按 ID 去重文件。
 - 事件数据类不可变；每个插件获得独立的 `raw` 副本，但嵌套值并非深度只读。`raw` 仅作只读后备，不保证长期兼容。
 
 ### 补充上下文
 
 ```python
-return {"context": "<参考资料>", "text": "去掉前缀后的用户文本"}
+return {
+    "context": "<参考资料>",
+    "text": "去掉前缀后的用户文本",
+    "media": [{"type": "input_image", "image_url": "data:image/png;base64,..."}],
+}
 ```
 
 - 仅在没有插件接管 `on_message` / `on_mention` 时调用，所有插件按优先级都会被调用，不会互相截断。
 - `context` 在本次请求中置于用户内容之前，不写入聊天历史；多个插件的 `context` 按优先级以空行拼接。
 - `text` 用于替换事件中的原文（如去掉命令前缀），多个插件返回时取优先级最高者。
-- 两个字段均可省略，但至少返回其一，且须为非空字符串；返回其他字段使结果失效。
+- `media` 为多模态内容片段（Responses 风格的 `input_image`、`input_audio`、`input_file` 等），按优先级合并后与文本一起作为当前用户消息发送，不写入聊天历史；内容为 Base64 编码，不要求宿主解码。使用 Chat Completions 时，宿主会把 `input_file` 转换为 `file`。
+- 三个字段均可省略，但至少返回其一，且 `context`、`text` 须为非空字符串、`media` 须为非空列表；返回其他字段使结果失效。
 - 事件类型与来源一致：聊天为 `MessageEvent`，提及为 `MentionEvent`。仅在 AI 回复前调用，须自设超时并容忍失败。
 
 ### 自动发帖
 
 ```python
-return {"contents": ["第一篇", {"text": "带图", "file_ids": ["<Drive 文件 ID>"]}], "visibility": "home"}
+return {
+    "contents": ["第一篇", {"text": "带图", "file_ids": ["<Drive 文件 ID>"]}],
+    "visibility": "home",
+}
 ```
 
 ```python
@@ -196,7 +206,9 @@ async with self.context.bot.actor_lock(event.user.id, event.user.handle):
 `call_api` 用于调用上表未封装的 Misskey 端点，自动使用实例地址与机器人令牌，复用并发限制、超时与错误处理：
 
 ```python
-notes = await self.context.misskey.call_api("notes/search", {"query": "misskey", "limit": 10})
+notes = await self.context.misskey.call_api(
+    "notes/search", {"query": "misskey", "limit": 10}
+)
 ```
 
 - `endpoint` 为 `notes/search` 这类相对路径，仅允许字母、数字、`_`、`-` 与 `/` 分隔；`params` 为 JSON 请求体，不得含 `i`，否则抛出 `ValueError`。

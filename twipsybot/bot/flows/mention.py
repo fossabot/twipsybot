@@ -88,17 +88,80 @@ class MentionHandler:
             return ""
         return extract_note_text(related, include_cw=True)
 
-    async def _build_mention_prompt(self, text: str, note: dict[str, Any]) -> str:
+    async def _build_mention_prompt(
+        self, text: str, note: dict[str, Any], *, include_parent: bool = True
+    ) -> str:
         note_data = normalize_payload(note)
         parts = [text.strip()]
         if note_data:
             if quoted := await self._related_note_text(note_data, "renote", "quoted"):
                 parts.append(f"Quote:\n{quoted}")
-            if not self._is_reply_to_bot(note_data) and (
-                parent := await self._related_note_text(note_data, "reply", "parent")
+            if (
+                include_parent
+                and not self._is_reply_to_bot(note_data)
+                and (
+                    parent := await self._related_note_text(
+                        note_data, "reply", "parent"
+                    )
+                )
             ):
                 parts.append(f"Replying to:\n{parent}")
         return "\n\n".join(p for p in parts if p)
+
+    def _thread_message(
+        self, note: dict[str, Any], user_id: str | None
+    ) -> dict[str, str] | None:
+        text = extract_note_text(note, include_cw=True)
+        if not text or note.get("isHidden"):
+            return None
+        author_id = extract_user_id(note)
+        if author_id is not None and author_id == self.bot.bot_user_id:
+            return {"role": "assistant", "content": text}
+        if author_id != user_id:
+            handle = extract_user_handle(note) or extract_username(note)
+            text = f"@{handle}: {text}"
+        return {"role": "user", "content": text}
+
+    def _thread_notes(
+        self, chain: list[dict[str, Any]], user_id: str | None
+    ) -> list[dict[str, Any]]:
+        parent, *rest = chain
+        if not rest:
+            return [parent]
+        *middle, root = rest
+        participants = {self.bot.bot_user_id, user_id} - {None}
+        return [
+            root,
+            *(n for n in reversed(middle) if extract_user_id(n) in participants),
+            parent,
+        ]
+
+    async def _thread_history(
+        self, note_data: dict[str, Any], user_id: str | None
+    ) -> list[dict[str, str]]:
+        limit = self.bot.config.get(ConfigKeys.REPLY_MEMORY)
+        budget = self.bot.config.get(ConfigKeys.REPLY_CTX_TOKENS)
+        note_id = note_data.get("id")
+        if (
+            limit <= 0
+            or budget <= 0
+            or not isinstance(note_id, str)
+            or not note_data.get("replyId")
+        ):
+            return []
+        try:
+            chain = await self.bot.misskey.get_note_conversation(note_id, limit=limit)
+        except Exception as e:
+            logger.debug(f"Failed to fetch conversation: {note_id} - {e}")
+            return []
+        if not chain:
+            return []
+        history = [
+            m
+            for n in self._thread_notes(chain, user_id)
+            if (m := self._thread_message(n, user_id))
+        ]
+        return self.bot.openai.trim_chat_history(history, budget)
 
     async def handle(self, note: dict[str, Any]) -> None:
         if not self.bot.config.get(ConfigKeys.REPLY_MENTION):
@@ -217,9 +280,17 @@ class MentionHandler:
     async def _generate_ai_reply(
         self, mention: MentionContext, note: dict[str, Any], augment: Augment
     ) -> str:
-        original = extract_note_text(normalize_payload(note), include_cw=False)
-        text = augment.rewrite(mention.text, original)
-        prompt = augment.wrap(await self._build_mention_prompt(text, note))
-        return await self.bot.openai.generate_text(
-            prompt, self.bot.system_prompt, **self.bot.ai_config
+        note_data = normalize_payload(note)
+        history = await self._thread_history(note_data, mention.user_id)
+        original = extract_note_text(note_data, include_cw=False)
+        own = extract_note_text(note_data, include_cw=True)
+        text = augment.rewrite(own if history else mention.text, original)
+        prompt = augment.wrap(
+            await self._build_mention_prompt(text, note, include_parent=not history)
         )
+        messages: list[dict[str, Any]] = []
+        if self.bot.system_prompt:
+            messages.append({"role": "system", "content": self.bot.system_prompt})
+        messages.extend(history)
+        messages.append({"role": "user", "content": augment.content(prompt)})
+        return await self.bot.openai.generate_chat(messages, **self.bot.ai_config)

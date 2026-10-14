@@ -11,4 +11,4 @@ repos:
       types_or: [ python, pyi ]
       args: [ --fix ]
     - id: ruff-format
-      types_or: [ python, pyi ]
+      types_or: [ python, pyi, markdown ]

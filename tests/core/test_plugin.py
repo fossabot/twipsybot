@@ -1311,6 +1311,59 @@ def test_mention_hook_event_preserves_note_files() -> None:
     assert event.files[0].id == "file-1"
     assert event.files[0].mime_type == "image/jpeg"
     assert event.files[0].url == "https://example.com/image.jpg"
+    assert event.reply is None
+    assert event.renote is None
+    assert event.attachments == event.files
+
+
+def test_mention_hook_event_exposes_related_notes() -> None:
+    def note(note_id: str, file_id: str) -> dict[str, Any]:
+        return {
+            "id": note_id,
+            "text": f"text-{note_id}",
+            "cw": "warn",
+            "user": {"id": "user-2", "username": "bob", "host": "example.com"},
+            "files": [{"id": file_id, "type": "application/pdf", "url": "u"}],
+        }
+
+    raw = {
+        "type": "reply",
+        "note": {
+            **note("note-1", "file-1"),
+            "replyId": "note-2",
+            "renoteId": "note-3",
+            "reply": note("note-2", "file-2"),
+            "renote": note("note-3", "file-3"),
+        },
+    }
+
+    event = build_hook_event("on_mention", raw)
+
+    assert isinstance(event, MentionEvent)
+    assert (event.reply_id, event.renote_id) == ("note-2", "note-3")
+    assert event.reply is not None
+    assert event.reply.text == "text-note-2"
+    assert event.reply.cw == "warn"
+    assert event.reply.user.handle == "bob@example.com"
+    assert event.renote is not None
+    assert event.renote.id == "note-3"
+    assert [f.id for f in event.attachments] == ["file-1", "file-3", "file-2"]
+
+
+def test_mention_hook_event_keeps_ids_when_related_notes_are_unavailable() -> None:
+    raw = {
+        "id": "note-1",
+        "user": {"id": "user-1", "username": "alice"},
+        "replyId": "note-2",
+        "reply": None,
+    }
+
+    event = build_hook_event("on_mention", raw)
+
+    assert isinstance(event, MentionEvent)
+    assert event.reply_id == "note-2"
+    assert event.reply is None
+    assert event.attachments == ()
 
 
 @pytest.mark.parametrize(
@@ -1319,6 +1372,11 @@ def test_mention_hook_event_preserves_note_files() -> None:
         ({"context": "c"}, True),
         ({"text": "t"}, True),
         ({"context": "c", "text": "t"}, True),
+        ({"media": [{"type": "input_image", "image_url": "u"}]}, True),
+        ({"context": "c", "media": [{"type": "input_text"}]}, True),
+        ({"media": []}, False),
+        ({"media": [{"image_url": "u"}]}, False),
+        ({"media": "image"}, False),
         ({}, False),
         ({"context": " "}, False),
         ({"context": "c", "extra": "x"}, False),

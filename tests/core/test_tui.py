@@ -78,7 +78,7 @@ def test_sections_are_generated_from_models() -> None:
     assert specs["plugins.iincho.min_notes"].file == "settings"
     assert specs["misskey_token"].kind == "secret"
     assert specs["misskey_url"].restart
-    assert {"plugins.keyact", "plugins.vision"} <= sections.keys()
+    assert {"plugins.keyact", "plugins.media"} <= sections.keys()
     assert [s.key for s in sections["connect"].specs] == [
         "misskey_url",
         "misskey_token",

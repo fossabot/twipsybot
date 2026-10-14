@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.24.0 - 2026-10-14
+
+参与他人帖或引用帖互动，并带回复链，Vision 更名为 Media
+
+### Added
+
+- `MentionEvent` 新增 `reply_id`、`renote_id`、`reply`、`renote` 与 `attachments`，以及 `NoteRef` 类型
+- Media 在提及中读取被回复、被引用帖子的附件，并按类型发送图片、MP3/WAV 音频、视频与其他音频（`input_image`、`input_audio`、`input_file`），其余类型不处理，由模型决定能否理解
+- Web 在提及中抓取被回复、被引用帖子正文里的链接
+- 提及回复读取回复链：以 `reply.memory` 为上限，保留最远一条（通常是主帖）、直接父帖，以及机器人与当前用户的发言，并受 `reply.ctx_tokens` 限制
+- `ContextResult` 新增 `media`，插件可为本次回复补充多模态内容
+
+### Changed
+
+- 插件 Vision 更名为 Media：配置节 `plugins.vision` 改为 `plugins.media`，`max_images` 改为 `max_files`
+- Media 不再接管回复，改为通过 `on_context` 提供附件，与回复链、联网资料等叠加
+- 附件额度只计入可处理的文件，不支持的类型不再占用 `max_files`
+- 提及回复改用多轮消息生成，历史包含父帖时不再重复拼接 `Replying to:`
+
+<br>
+
 ## 0.23.0 - 2026-10-13
 
 一致性修整

@@ -84,6 +84,7 @@ def _build_misskey_app(
                 }
             },
             "notes/show": lambda payload: {"visibility": "public"},
+            "notes/conversation": lambda payload: [],
             "chat/messages/create-to-user": lambda payload: {"id": "msg-1"},
             "chat/messages/create-to-room": lambda payload: {"id": "msg-1"},
             "chat/messages/user-timeline": lambda payload: [],

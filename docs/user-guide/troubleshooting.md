@@ -40,7 +40,7 @@ docker compose logs --tail 200 twipsybot
 
 - `reply.mention` / `reply.chat` 已开启。
 - 用户未被拉黑，也未触发间隔或轮数限制（`^status`、`^blacklist list`）。
-- KeyAct 或 Vision 是否接管后失败。
+- KeyAct 是否接管后失败。
 - Streaming 是否已连接，必要时临时调为 `DEBUG`。
 
 ## `/post` 或 `/img` 无效
@@ -63,12 +63,12 @@ docker compose logs --tail 200 twipsybot
 - list 模式下 `list` 不能为空，引用的 `prompts/` 文件需存在，否则插件启动失败。
 - RSS 模式：检查 URL、网络与 HTTP 状态，条目需含标题与链接。已发布条目不会重复；AI 改写失败回退为标题，拉取失败跳过该源。
 
-### Vision 不识图
+### Media 不识别附件
 
-- 附件为图片且不超过 `max_bytes`。
+- 附件缺少类型信息、下载失败或超过 `max_bytes` 时会被跳过；数量不超过 `max_files`。
 - 附件 URL 指向内网会被拒绝，需配置 `system.allow_nets`。
-- 模型与 `bot.api_mode` 支持多模态输入。
-- 细节不足时关闭 `use_thumbnail`。
+- 模型与 `bot.api_mode` 支持多模态输入；音频、视频是否被接受取决于服务商。
+- 细节不足时确认 `use_thumbnail` 已关闭。
 - 从日志区分 Drive 下载失败与模型拒绝。
 
 ### Web 不检索

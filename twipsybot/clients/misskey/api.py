@@ -218,6 +218,13 @@ class MisskeyAPI:
     async def get_note(self, note_id: str) -> dict[str, Any]:
         return await self.make_read_request("notes/show", {"noteId": note_id})
 
+    async def get_note_conversation(
+        self, note_id: str, *, limit: int
+    ) -> list[dict[str, Any]]:
+        return await self.make_read_request(
+            "notes/conversation", {"noteId": note_id, "limit": limit}
+        )
+
     async def get_user_notes(
         self,
         user_id: str,
